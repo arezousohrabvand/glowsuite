@@ -145,6 +145,154 @@ No lost payments
 Retry failed operations
 Decoupled system design
 
+✨ GlowSuite
+Overview
+
+GlowSuite is a modular, production-grade salon booking platform built with a focus on clean architecture, real-time systems, and reliability patterns.
+
+The system is organized around feature modules instead of a monolithic structure:
+
+Auth handles authentication, authorization, and JWT issuance
+Booking manages appointment lifecycle and slot availability
+Billing handles Stripe payments, invoices, and payment state transitions
+Admin provides dashboards, analytics, and booking management
+Infrastructure modules handle Redis caching, WebSockets, and background workers
+
+The platform simulates a real-world SaaS system, including:
+
+Real-time booking with slot locking (Redis)
+Stripe checkout + webhook confirmation
+Outbox pattern for guaranteed reliability
+Admin analytics dashboard
+Event-driven architecture for scalability
+
+Architecture
+
+The runtime follows a clean, layered architecture:
+frontend/
+React (Vite) client
+
+backend/
+src/
+modules/
+auth/
+booking/
+billing/
+admin/
+
+    application/
+      use-cases/
+
+    domain/
+      models/
+
+    infrastructure/
+      database/
+      redis/
+      websocket/
+      queue/
+
+    contracts/
+      DTOs/
+
+    workers/
+      outboxWorker.js
+
+    server.js
+
+Layer Responsibilities
+Domain → core business rules (Booking, Payment, User)
+Application → use cases (CreateBooking, ProcessPayment)
+Infrastructure → DB, Redis, Stripe, WebSockets
+Contracts → API DTOs
+Modules → feature isolation (Auth, Booking, Billing, Admin)
+
+The API layer depends only on Application + Contracts, never directly on Domain.
+
+System Architecture Diagram
+
+```mermaid
+flowchart TD
+    A[🌐 React Client] --> B[🚀 Express API Gateway]
+
+    B --> C[🔐 Auth Module]
+    B --> D[📅 Booking Module]
+    B --> E[💳 Billing Module]
+    B --> F[📊 Admin Module]
+
+    C --> G[(🗄️ MongoDB)]
+    D --> G
+    E --> G
+
+    D --> H[(⚡ Redis Cache)]
+    E --> H
+
+    E --> I[💰 Stripe API]
+
+    E --> J[📦 Outbox Table]
+    J --> K[⚙️ Outbox Worker]
+    K --> L[📧 Email / Notifications]
+```
+
+Runtime Flow
+The system processes requests through a reliable, event-driven flow:
+
+Client sends request with JWT
+API authenticates user and resolves role
+Controller dispatches to application use-case
+Business logic executes in domain layer
+Data is persisted to MongoDB
+Domain events are written to Outbox table
+Worker processes events asynchronously
+External systems (email, analytics) are triggered
+
+Booking Flow
+sequenceDiagram
+participant User
+participant Frontend
+participant Backend
+participant Redis
+participant Stripe
+
+    User->>Frontend: Select Service
+    Frontend->>Backend: Create Booking Request
+
+    Backend->>Redis: Lock Slot
+    Redis-->>Backend: Success
+
+    Backend->>Stripe: Create Checkout
+    Stripe-->>Frontend: Redirect
+
+    Stripe->>Backend: Webhook (Success)
+    Backend->>DB: Save Booking
+    Backend->>Outbox: Create Event
+
+Key Features
+🔴 Slot Locking (No Double Booking)
+Uses Redis distributed locks
+Prevents concurrent booking conflicts
+Auto-expires after timeout
+
+SETNX booking_lock:{slotId} userId EX 300
+
+⚡ Real-Time Updates
+WebSocket (Socket.IO)
+Live slot availability updates
+Instant UI refresh for all users
+
+Payment System
+Stripe Checkout integration
+Webhook-based confirmation
+Invoice + email flow
+
+🧠 Outbox Pattern (Reliability)
+
+Guarantees:
+
+No lost payments
+Retry failed operations
+Decoupled system design
+
 ```mermaid
 flowchart TD
 A[Payment Success] --> B[Write DB]
