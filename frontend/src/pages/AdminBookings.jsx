@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAdminBookings, updateAdminBookingStatus } from "../../api/adminApi";
+import { getAdminBookings, updateAdminBookingStatus } from "../api/adminApi";
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
