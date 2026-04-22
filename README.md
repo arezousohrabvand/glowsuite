@@ -63,6 +63,8 @@ Modules → feature isolation (Auth, Booking, Billing, Admin)
 The API layer depends only on Application + Contracts, never directly on Domain.
 
 System Architecture Diagram
+
+````mermaid
 flowchart TD
 A[React Client] --> B[Express API Gateway]
 
@@ -143,6 +145,7 @@ No lost payments
 Retry failed operations
 Decoupled system design
 
+```mermaid
 flowchart TD
 A[Payment Success] --> B[Write DB]
 B --> C[Write Outbox Event]
@@ -293,3 +296,4 @@ Distributed locking (Redis)
 Payment reliability patterns
 Event-driven architecture
 Production-ready backend thinking
+````
