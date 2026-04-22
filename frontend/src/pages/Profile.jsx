@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { CheckCircle2, UserRound, Mail, Phone } from "lucide-react";
 import { getMyProfile, updateMyProfile } from "../api/profileApi";

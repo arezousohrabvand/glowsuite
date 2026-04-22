@@ -9,7 +9,7 @@ export function getAuthToken() {
       userInfo?.accessToken ||
       ""
     );
-  } catch (error) {
+  } catch {
     return localStorage.getItem("token") || "";
   }
 }
@@ -18,7 +18,7 @@ export function getStoredUser() {
   try {
     const rawUserInfo = localStorage.getItem("userInfo");
     return rawUserInfo ? JSON.parse(rawUserInfo) : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
