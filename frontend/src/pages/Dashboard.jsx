@@ -7,6 +7,60 @@ import EnrollmentChart from "../components/dashboard/EnrollmentChart";
 import StatCard from "../components/dashboard/StatCard";
 import { getMe, getMyBookings, getMyEnrollments } from "../api/dashboardApi";
 
+function calculateRewards(bookings = [], classes = []) {
+  let points = 0;
+  let completedBookings = 0;
+  let paidClasses = 0;
+  let rewardTier = "Bronze";
+  const rewards = [];
+
+  for (const booking of bookings) {
+    const status = String(booking.status || "").toLowerCase();
+
+    if (status === "completed") {
+      completedBookings += 1;
+      points += 20;
+    }
+
+    if (status === "confirmed" || status === "upcoming") {
+      points += 5;
+    }
+  }
+
+  for (const item of classes) {
+    const status = String(item.status || "").toLowerCase();
+
+    if (status === "paid" || status === "enrolled") {
+      paidClasses += 1;
+      points += 15;
+    }
+  }
+
+  if (completedBookings >= 3) {
+    rewards.push("Free hair treatment add-on");
+  }
+
+  if (paidClasses >= 2) {
+    rewards.push("10% off next class");
+  }
+
+  if (points >= 300) {
+    rewardTier = "Gold";
+    rewards.push("15% off next booking");
+  } else if (points >= 150) {
+    rewardTier = "Silver";
+    rewards.push("10% off next booking");
+  }
+
+  return {
+    points,
+    completedBookings,
+    paidClasses,
+    rewardTier,
+    rewards,
+  };
+}
+
 function Dashboard() {
   const [user, setUser] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -29,7 +83,7 @@ function Dashboard() {
               booking.service?.name ||
               booking.title ||
               "Service",
-            date: booking.date,
+            date: booking.date || booking.slotStart || "",
             status: booking.status || "Pending",
           }));
 
@@ -94,6 +148,10 @@ function Dashboard() {
       enrollments: monthMap[month],
     }));
   }, [classes]);
+
+  const rewardSummary = useMemo(() => {
+    return calculateRewards(bookings, classes);
+  }, [bookings, classes]);
 
   const displayName =
     user?.fullName ||
@@ -214,10 +272,10 @@ function Dashboard() {
 
                 <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                    Next Focus
+                    Reward Tier
                   </p>
                   <p className="mt-2 text-lg font-bold text-slate-900">
-                    Upcoming Appointments
+                    {rewardSummary.rewardTier}
                   </p>
                 </div>
               </div>
@@ -238,7 +296,7 @@ function Dashboard() {
               <StatCard title="Classes Joined" value={classes.length} />
             </div>
             <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <StatCard title="Loyalty Points" value="120" />
+              <StatCard title="Loyalty Points" value={rewardSummary.points} />
             </div>
           </section>
 
@@ -288,7 +346,7 @@ function Dashboard() {
                   Class Activity
                 </h2>
 
-                <div className="w-full h-[280px] min-w-0">
+                <div className="h-[280px] w-full min-w-0">
                   <EnrollmentChart data={enrollmentData} />
                 </div>
               </div>
@@ -330,16 +388,64 @@ function Dashboard() {
                     Billing History
                   </Link>
                 </div>
+              </div>
 
-                <div className="mt-6 rounded-2xl bg-gradient-to-br from-pink-600 to-rose-500 p-5 text-white">
-                  <p className="text-xs uppercase tracking-[0.18em] text-pink-100">
-                    Glow Tip
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/90">
-                    Keep your hair hydrated between appointments with a weekly
-                    nourishing mask and a sulfate-free cleanser.
-                  </p>
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="text-xl font-bold text-slate-900">My Rewards</h2>
+
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Reward Tier
+                    </p>
+                    <p className="mt-2 text-lg font-bold text-slate-900">
+                      {rewardSummary.rewardTier}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Points
+                    </p>
+                    <p className="mt-2 text-lg font-bold text-slate-900">
+                      {rewardSummary.points}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                      Available Rewards
+                    </p>
+
+                    {rewardSummary.rewards.length === 0 ? (
+                      <p className="mt-2 text-sm text-slate-600">
+                        No reward unlocked yet. Keep booking and joining
+                        classes.
+                      </p>
+                    ) : (
+                      <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                        {rewardSummary.rewards.map((reward, index) => (
+                          <li
+                            key={index}
+                            className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-100"
+                          >
+                            {reward}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              <div className="rounded-2xl bg-gradient-to-br from-pink-600 to-rose-500 p-5 text-white">
+                <p className="text-xs uppercase tracking-[0.18em] text-pink-100">
+                  Glow Tip
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/90">
+                  Keep your hair hydrated between appointments with a weekly
+                  nourishing mask and a sulfate-free cleanser.
+                </p>
               </div>
             </div>
           </section>

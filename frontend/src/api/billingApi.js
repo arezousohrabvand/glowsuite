@@ -16,7 +16,7 @@ function getToken() {
 }
 
 const billingClient = axios.create({
-  baseURL: `${API_BASE_URL}/billing`, // ✅ NO extra /api
+  baseURL: `${API_BASE_URL}/billing`,
 });
 
 billingClient.interceptors.request.use((config) => {
@@ -28,8 +28,6 @@ billingClient.interceptors.request.use((config) => {
 
   return config;
 });
-
-// ================= API =================
 
 export async function getBillingHistory() {
   const res = await billingClient.get("/my-history");
@@ -47,7 +45,7 @@ export async function previewBilling(payload) {
 }
 
 export async function getAdminBillingHistory(params = {}) {
-  const res = await billingClient.get("/admin/all", { params }); // ✅ FIXED
+  const res = await billingClient.get("/admin/all", { params });
   return res.data;
 }
 

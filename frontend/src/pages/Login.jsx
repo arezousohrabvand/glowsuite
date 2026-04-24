@@ -16,8 +16,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const from = location.state?.from?.pathname || "/dashboard";
-
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -42,14 +40,32 @@ export default function Login() {
 
       const data = res.data;
 
-      localStorage.setItem("token", data.token || data.accessToken || "");
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      const token = data.token || data.accessToken || "";
+      const role = data.role || data.user?.role || "customer";
+
+      localStorage.setItem("token", token);
+      localStorage.setItem(
+        "userInfo",
+        JSON.stringify({
+          ...data,
+          role,
+          token,
+        }),
+      );
 
       if (saveAuth) {
-        saveAuth(data);
+        saveAuth({
+          ...data,
+          role,
+          token,
+        });
       }
 
-      navigate(from, { replace: true });
+      const redirectTo =
+        location.state?.from?.pathname ||
+        (role === "admin" ? "/admin" : "/dashboard");
+
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -66,7 +82,6 @@ export default function Login() {
             alt="Salon"
             className="absolute inset-0 h-full w-full object-cover"
           />
-
           <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-pink-700/70 to-rose-500/70" />
 
           <div className="relative z-10">

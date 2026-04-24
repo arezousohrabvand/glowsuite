@@ -10,7 +10,6 @@ import PaymentSuccess from "../pages/PaymentSuccess";
 import PaymentCancel from "../pages/PaymentCancel";
 import AdminBilling from "../pages/admin/AdminBilling";
 import EnrollmentPayment from "../pages/EnrollmentPayment";
-import BillingHistory from "../pages/BillingHistory";
 import AdminRevenue from "../pages/admin/AdminRevenue";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
@@ -30,13 +29,12 @@ const MyClasses = lazy(() => import("../pages/MyClasses"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
-const AdminServices = lazy(() => import("../pages/AdminServices"));
-const AdminBookings = lazy(() => import("../pages/AdminBookings"));
-const AdminClasses = lazy(() => import("../pages/AdminClasses"));
-const AdminCustomers = lazy(() => import("../pages/AdminCustomers"));
+const AdminServices = lazy(() => import("../pages/admin/AdminServices"));
+const AdminBookings = lazy(() => import("../pages/admin/AdminBookings"));
+const AdminClasses = lazy(() => import("../pages/admin/AdminClasses"));
+const AdminCustomers = lazy(() => import("../pages/admin/AdminCustomers"));
 const Billing = lazy(() => import("../pages/Billing"));
 const NotFound = lazy(() => import("../pages/NotFound"));
-
 const AdminUsers = lazy(() => import("../pages/admin/AdminUsers"));
 const AdminCalendar = lazy(() => import("../pages/admin/AdminCalendar"));
 
@@ -73,22 +71,13 @@ export default function AppRoutes() {
             <Route path="/booking" element={<Booking />} />
             <Route path="/classes" element={<Classes />} />
             <Route path="/classes/:id" element={<ClassDetails />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-cancel" element={<PaymentCancel />} />
-            <Route path="/billing" element={<Billing />} />
-            <Route path="/admin/billing" element={<AdminBilling />} />
-            <Route path="/admin/revenue" element={<AdminRevenue />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/billing" element={<BillingHistory />} />
             <Route
               path="/enrollment-payment/:enrollmentId"
               element={<EnrollmentPayment />}
             />
-            <Route
-              path="/payment-cancel"
-              element={<div>Payment cancelled</div>}
-            />
+
             {/* User routes */}
             <Route
               path="/dashboard"
@@ -115,6 +104,14 @@ export default function AppRoutes() {
               }
             />
             <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
@@ -130,6 +127,7 @@ export default function AppRoutes() {
                 </ProtectedRoute>
               }
             />
+
             {/* Admin routes */}
             <Route
               path="/admin"
@@ -140,26 +138,10 @@ export default function AppRoutes() {
               }
             />
             <Route
-              path="/admin/services"
-              element={
-                <AdminRoute>
-                  <AdminServices />
-                </AdminRoute>
-              }
-            />
-            <Route
               path="/admin/bookings"
               element={
                 <AdminRoute>
                   <AdminBookings />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/classes"
-              element={
-                <AdminRoute>
-                  <AdminClasses />
                 </AdminRoute>
               }
             />
@@ -170,21 +152,12 @@ export default function AppRoutes() {
                   <AdminCustomers />
                 </AdminRoute>
               }
-            />{" "}
-            {/* admin */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              }
             />
             <Route
-              path="/admin/bookings"
+              path="/admin/classes"
               element={
                 <AdminRoute>
-                  <AdminBookings />
+                  <AdminClasses />
                 </AdminRoute>
               }
             />
@@ -228,6 +201,7 @@ export default function AppRoutes() {
                 </AdminRoute>
               }
             />
+
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>

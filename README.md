@@ -123,7 +123,7 @@ sequenceDiagram
     Backend->>Outbox: Create Event
 ```
 
-## Key Features
+##Key Features
 🔴 Slot Locking (No Double Booking)
 Uses Redis distributed locks
 Prevents concurrent booking conflicts
@@ -136,7 +136,7 @@ WebSocket (Socket.IO)
 Live slot availability updates
 Instant UI refresh for all users
 
-## Payment System
+Payment System
 Stripe Checkout integration
 Webhook-based confirmation
 Invoice + email flow
@@ -164,41 +164,41 @@ Supports retry and debugging
 
 Modules
 
-## Auth
+##Auth
 User registration/login
 JWT authentication
 Role-based access control
 
-## Booking
+##Booking
 Create/update/cancel bookings
 Slot availability logic
 Redis lock integration
 
-## Billing
+##Billing
 Stripe checkout session
 Webhook handling
 Payment state tracking
 
-## Admin
+##Admin
 Dashboard analytics
 Booking management
 Status updates
 
 ## Tech Stack
 
-Frontend
+### Frontend
 
 - React + Vite
 - Tailwind CSS
 - Axios
 
- Backend
+### Backend
 
 - Node.js + Express
 - MongoDB (Mongoose)
 - Redis
 
-## DevOps
+### DevOps
 
 - Docker (planned)
 - Kubernetes (EKS planned)
@@ -226,11 +226,11 @@ jobs:
       - run: npm run build
 ```
 
-## API Documentation (Swagger)
+API Documentation (Swagger)
 
 Swagger (OpenAPI) is included for API exploration.
 
-## Setup
+Setup
 npm install swagger-ui-express yamljs
 
 import swaggerUi from "swagger-ui-express";
@@ -244,22 +244,23 @@ Open in browser:
 
 http://localhost:5000/api/docs
 
-## Prerequisites
+##Prerequisites
 Node.js 18+
 MongoDB (local or Atlas)
 Redis
 
-## Backend
+##Backend
 cd backend
 npm install
 npm run dev
 
-## Frontend
+##Frontend
 cd frontend
 npm install
 npm run dev
 
 ## Environment Variables
+
 PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret
@@ -267,26 +268,26 @@ STRIPE_SECRET_KEY=your_key
 STRIPE_WEBHOOK_SECRET=your_webhook
 REDIS_URL=redis://localhost:6379
 
-## Testing
+Testing
 Unit tests (Jest)
 API tests (Supertest)
 Booking flow validation
 Stripe webhook tests
 
-## Deployment
+Deployment
 Frontend → Vercel
 Backend → Docker / AWS EC2 / EKS
 Redis → AWS ElastiCache
 MongoDB → Atlas
 
-## Documentation Map
+Documentation Map
 README.md → system overview
 docs/swagger.yaml → API documentation
 src/modules/\* → feature modules
 workers/ → background jobs
 infrastructure/ → external systems
 
-## GlowSuite demonstrates:
+GlowSuite demonstrates:
 
 Clean Architecture (modular design)
 Real-time system design
@@ -294,5 +295,3 @@ Distributed locking (Redis)
 Payment reliability patterns
 Event-driven architecture
 Production-ready backend thinking
-
-
