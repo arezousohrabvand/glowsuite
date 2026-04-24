@@ -244,7 +244,7 @@ Open in browser:
 
 http://localhost:5000/api/docs
 
-##Prerequisites
+## Prerequisites
 Node.js 18+
 MongoDB (local or Atlas)
 Redis
@@ -268,26 +268,26 @@ STRIPE_SECRET_KEY=your_key
 STRIPE_WEBHOOK_SECRET=your_webhook
 REDIS_URL=redis://localhost:6379
 
-Testing
+## Testing
 Unit tests (Jest)
 API tests (Supertest)
 Booking flow validation
 Stripe webhook tests
 
-Deployment
+## Deployment
 Frontend → Vercel
 Backend → Docker / AWS EC2 / EKS
 Redis → AWS ElastiCache
 MongoDB → Atlas
 
-Documentation Map
+## Documentation Map
 README.md → system overview
 docs/swagger.yaml → API documentation
 src/modules/\* → feature modules
 workers/ → background jobs
 infrastructure/ → external systems
 
-GlowSuite demonstrates:
+## GlowSuite demonstrates:
 
 Clean Architecture (modular design)
 Real-time system design
