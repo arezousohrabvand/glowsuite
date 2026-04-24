@@ -123,7 +123,7 @@ sequenceDiagram
     Backend->>Outbox: Create Event
 ```
 
-##Key Features
+## Key Features
 🔴 Slot Locking (No Double Booking)
 Uses Redis distributed locks
 Prevents concurrent booking conflicts
@@ -164,22 +164,22 @@ Supports retry and debugging
 
 Modules
 
-##Auth
+## Auth
 User registration/login
 JWT authentication
 Role-based access control
 
-##Booking
+## Booking
 Create/update/cancel bookings
 Slot availability logic
 Redis lock integration
 
-##Billing
+## Billing
 Stripe checkout session
 Webhook handling
 Payment state tracking
 
-##Admin
+## Admin
 Dashboard analytics
 Booking management
 Status updates
@@ -249,12 +249,12 @@ Node.js 18+
 MongoDB (local or Atlas)
 Redis
 
-##Backend
+## Backend
 cd backend
 npm install
 npm run dev
 
-##Frontend
+## Frontend
 cd frontend
 npm install
 npm run dev
