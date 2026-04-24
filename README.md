@@ -227,7 +227,7 @@ jobs:
 ```
 
 API Documentation (Swagger)
-
+```
 Swagger (OpenAPI) is included for API exploration.
 
 Setup
@@ -243,55 +243,65 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 Open in browser:
 
 http://localhost:5000/api/docs
-
+```
 ## Prerequisites
+```
 Node.js 18+
 MongoDB (local or Atlas)
 Redis
-
+```
 ## Backend
+```
 cd backend
 npm install
 npm run dev
-
+```
 ## Frontend
+```
 cd frontend
 npm install
 npm run dev
-
+```
 ## Environment Variables
-
+```
 PORT=5000
 MONGO_URI=your_mongodb_uri
 JWT_SECRET=your_secret
 STRIPE_SECRET_KEY=your_key
 STRIPE_WEBHOOK_SECRET=your_webhook
 REDIS_URL=redis://localhost:6379
-
+```
 ## Testing
+```
 Unit tests (Jest)
 API tests (Supertest)
 Booking flow validation
 Stripe webhook tests
+```
 
 ## Deployment
+
+```
 Frontend → Vercel
 Backend → Docker / AWS EC2 / EKS
 Redis → AWS ElastiCache
 MongoDB → Atlas
+```
 
 ## Documentation Map
+```
 README.md → system overview
 docs/swagger.yaml → API documentation
 src/modules/\* → feature modules
 workers/ → background jobs
 infrastructure/ → external systems
-
+```
 ## GlowSuite demonstrates:
-
+```
 Clean Architecture (modular design)
 Real-time system design
 Distributed locking (Redis)
 Payment reliability patterns
 Event-driven architecture
 Production-ready backend thinking
+```
