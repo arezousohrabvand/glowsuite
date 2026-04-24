@@ -54,6 +54,7 @@ admin/
     server.js
 
 Layer Responsibilities
+
 Domain → core business rules (Booking, Payment, User)
 Application → use cases (CreateBooking, ProcessPayment)
 Infrastructure → DB, Redis, Stripe, WebSockets
@@ -227,10 +228,11 @@ jobs:
 ```
 
 API Documentation (Swagger)
-```
+
 Swagger (OpenAPI) is included for API exploration.
 
 Setup
+```
 npm install swagger-ui-express yamljs
 
 import swaggerUi from "swagger-ui-express";
