@@ -1,5 +1,6 @@
 import "dotenv/config";
 import http from "http";
+import mongoose from "mongoose";
 import { Server } from "socket.io";
 
 import app from "./app.js";
@@ -42,6 +43,12 @@ io.on("connection", (socket) => {
 });
 
 async function expireClassSeatHolds() {
+  // ✅ Important: skip if Mongo is disconnected
+  if (mongoose.connection.readyState !== 1) {
+    console.log("Mongo not ready, skipping expireClassSeatHolds");
+    return;
+  }
+
   const now = new Date();
 
   const expiredHolds = await ClassSeatHold.find({
@@ -66,17 +73,36 @@ async function expireClassSeatHolds() {
       activeHoldsReleased: true,
     });
   }
+
+  console.log(`Expired ${expiredHolds.length} class seat holds`);
+}
+
+let isExpiringClassSeatHolds = false;
+
+function startClassSeatHoldInterval() {
+  setInterval(async () => {
+    // ✅ Prevent job from running again while previous one is still running
+    if (isExpiringClassSeatHolds) return;
+
+    try {
+      isExpiringClassSeatHolds = true;
+      await expireClassSeatHolds();
+    } catch (err) {
+      console.error("expireClassSeatHolds error:", err.message);
+    } finally {
+      isExpiringClassSeatHolds = false;
+    }
+  }, 15000);
+
+  console.log("Class seat hold interval started");
 }
 
 async function startServer() {
   try {
     await connectDB();
 
-    setInterval(() => {
-      expireClassSeatHolds().catch((err) => {
-        console.error("expireClassSeatHolds error:", err);
-      });
-    }, 15000);
+    // ✅ Start background job AFTER database connects
+    startClassSeatHoldInterval();
 
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

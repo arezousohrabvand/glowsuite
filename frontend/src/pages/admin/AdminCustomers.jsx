@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getAdminCustomers, getAdminCustomerDetails } from "../../api/adminApi";
 
 function formatMoney(value) {
@@ -6,6 +6,10 @@ function formatMoney(value) {
     style: "currency",
     currency: "USD",
   }).format(Number(value || 0));
+}
+
+function getInitials(customer) {
+  return `${customer?.firstName?.[0] || ""}${customer?.lastName?.[0] || ""}`.toUpperCase();
 }
 
 export default function AdminCustomers() {
@@ -50,165 +54,268 @@ export default function AdminCustomers() {
     }
   }
 
+  const stats = useMemo(() => {
+    const totalSpend = customers.reduce(
+      (sum, c) => sum + Number(c.totalSpend || 0),
+      0,
+    );
+
+    const totalBookings = customers.reduce(
+      (sum, c) => sum + Number(c.totalBookings || 0),
+      0,
+    );
+
+    return {
+      customers: customers.length,
+      totalBookings,
+      totalSpend,
+      avgSpend: customers.length ? totalSpend / customers.length : 0,
+    };
+  }, [customers]);
+
   return (
-    <div className="mx-auto max-w-7xl p-6">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold">Admin Customers</h1>
+    <div className="min-h-screen bg-zinc-50 p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="rounded-3xl bg-zinc-950 p-8 text-white shadow-xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-rose-300">
+            Customer Insights
+          </p>
 
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Search by name or email"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-72 rounded-lg border border-zinc-300 px-4 py-2"
-          />
-          <button
-            type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-white"
+          <h1 className="mt-3 text-4xl font-bold tracking-tight">
+            Customer Management
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
+            View customer activity, bookings, and lifetime value from a clean
+            CRM-style dashboard.
+          </p>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-4">
+            <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                Customers
+              </p>
+              <p className="mt-2 text-3xl font-bold">{stats.customers}</p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                Bookings
+              </p>
+              <p className="mt-2 text-3xl font-bold">{stats.totalBookings}</p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                Total Spend
+              </p>
+              <p className="mt-2 text-3xl font-bold">
+                {formatMoney(stats.totalSpend)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+                Avg Spend
+              </p>
+              <p className="mt-2 text-3xl font-bold">
+                {formatMoney(stats.avgSpend)}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
+          <form
+            onSubmit={handleSearch}
+            className="grid gap-3 md:grid-cols-[1fr_140px]"
           >
-            Search
-          </button>
-        </form>
-      </div>
+            <input
+              type="text"
+              placeholder="Search customer by name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:bg-white"
+            />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          {loading ? (
-            <p>Loading customers...</p>
-          ) : (
-            <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm">
-              <table className="min-w-full text-left">
-                <thead className="bg-zinc-50">
-                  <tr>
-                    <th className="px-4 py-3">Name</th>
-                    <th className="px-4 py-3">Email</th>
-                    <th className="px-4 py-3">Phone</th>
-                    <th className="px-4 py-3">Bookings</th>
-                    <th className="px-4 py-3">Total Spend</th>
-                    <th className="px-4 py-3">Action</th>
-                  </tr>
-                </thead>
+            <button
+              type="submit"
+              className="rounded-2xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
+            >
+              Search
+            </button>
+          </form>
+        </section>
 
-                <tbody>
-                  {customers.map((customer) => (
-                    <tr key={customer._id} className="border-t">
-                      <td className="px-4 py-3">
-                        {customer.firstName} {customer.lastName}
-                      </td>
-                      <td className="px-4 py-3">{customer.email}</td>
-                      <td className="px-4 py-3">{customer.phone || "-"}</td>
-                      <td className="px-4 py-3">
-                        {customer.totalBookings || 0}
-                      </td>
-                      <td className="px-4 py-3">
-                        {formatMoney(customer.totalSpend)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleOpenCustomer(customer._id)}
-                          className="rounded bg-zinc-900 px-3 py-1 text-white"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {customers.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="6"
-                        className="px-4 py-6 text-center text-zinc-500"
-                      >
-                        No customers found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
+          <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200">
+            <div className="border-b border-zinc-200 px-6 py-5">
+              <h2 className="text-xl font-bold text-zinc-900">
+                Customer Directory
+              </h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                {customers.length} customers found
+              </p>
             </div>
-          )}
-        </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-xl font-semibold">Customer Details</h2>
+            {loading ? (
+              <div className="p-8 text-zinc-500">Loading customers...</div>
+            ) : (
+              <div className="divide-y divide-zinc-100">
+                {customers.map((customer) => (
+                  <div
+                    key={customer._id}
+                    className="grid gap-4 px-6 py-5 transition hover:bg-zinc-50 lg:grid-cols-[1.2fr_1.4fr_0.8fr_0.9fr_120px]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-950 text-sm font-bold text-white">
+                        {getInitials(customer) || "C"}
+                      </div>
 
-          {detailLoading ? (
-            <p>Loading customer details...</p>
-          ) : !selectedCustomer ? (
-            <p className="text-zinc-500">Select a customer to view details.</p>
-          ) : (
-            <div className="space-y-5">
-              <div>
-                <p className="text-sm text-zinc-500">Name</p>
-                <p className="font-semibold">
-                  {selectedCustomer.customer.firstName}{" "}
-                  {selectedCustomer.customer.lastName}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-zinc-500">Email</p>
-                <p>{selectedCustomer.customer.email}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-zinc-500">Phone</p>
-                <p>{selectedCustomer.customer.phone || "-"}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border p-3">
-                  <p className="text-xs text-zinc-500">Bookings</p>
-                  <p className="text-xl font-bold">
-                    {selectedCustomer.totalBookings || 0}
-                  </p>
-                </div>
-
-                <div className="rounded-xl border p-3">
-                  <p className="text-xs text-zinc-500">Total Spend</p>
-                  <p className="text-xl font-bold">
-                    {formatMoney(selectedCustomer.totalSpend)}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="mb-2 font-semibold">Booking History</h3>
-
-                <div className="max-h-[360px] space-y-3 overflow-y-auto">
-                  {selectedCustomer.bookings?.map((booking) => (
-                    <div
-                      key={booking._id}
-                      className="rounded-xl border border-zinc-200 p-3"
-                    >
-                      <p className="font-medium">
-                        {booking.service?.name ||
-                          booking.serviceName ||
-                          "Service"}
-                      </p>
-                      <p className="text-sm text-zinc-600">
-                        {booking.date || "-"} {booking.time || ""}
-                      </p>
-                      <p className="text-sm text-zinc-600">
-                        Status: {booking.status}
-                      </p>
-                      <p className="text-sm text-zinc-600">
-                        Price: {formatMoney(booking.price)}
-                      </p>
+                      <div>
+                        <p className="font-semibold text-zinc-900">
+                          {customer.firstName || "—"} {customer.lastName || ""}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          ID: {String(customer._id).slice(-8)}
+                        </p>
+                      </div>
                     </div>
-                  ))}
 
-                  {!selectedCustomer.bookings?.length && (
-                    <p className="text-sm text-zinc-500">
-                      No bookings for this customer.
+                    <div className="flex items-center text-sm text-zinc-600">
+                      {customer.email || "No email"}
+                    </div>
+
+                    <div className="flex items-center text-sm text-zinc-600">
+                      {customer.totalBookings || 0} bookings
+                    </div>
+
+                    <div className="flex items-center font-semibold text-zinc-900">
+                      {formatMoney(customer.totalSpend)}
+                    </div>
+
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => handleOpenCustomer(customer._id)}
+                        className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {customers.length === 0 && (
+                  <div className="px-6 py-16 text-center">
+                    <p className="text-lg font-semibold text-zinc-900">
+                      No customers found
                     </p>
-                  )}
+                    <p className="mt-2 text-sm text-zinc-500">
+                      Try searching another name or email.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
+            <h2 className="text-xl font-bold text-zinc-900">
+              Customer Details
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              Select a customer to review profile and booking history.
+            </p>
+
+            {detailLoading ? (
+              <p className="mt-6 text-sm text-zinc-500">
+                Loading customer details...
+              </p>
+            ) : !selectedCustomer ? (
+              <div className="mt-6 rounded-2xl bg-zinc-50 p-5 text-sm text-zinc-500">
+                No customer selected.
+              </div>
+            ) : (
+              <div className="mt-6 space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-950 text-base font-bold text-white">
+                    {getInitials(selectedCustomer.customer) || "C"}
+                  </div>
+
+                  <div>
+                    <p className="font-bold text-zinc-900">
+                      {selectedCustomer.customer.firstName}{" "}
+                      {selectedCustomer.customer.lastName}
+                    </p>
+                    <p className="text-sm text-zinc-500">
+                      {selectedCustomer.customer.email}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-zinc-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+                      Bookings
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-zinc-900">
+                      {selectedCustomer.totalBookings || 0}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-zinc-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
+                      Spend
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-zinc-900">
+                      {formatMoney(selectedCustomer.totalSpend)}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 font-bold text-zinc-900">
+                    Booking History
+                  </h3>
+
+                  <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+                    {selectedCustomer.bookings?.map((booking) => (
+                      <div
+                        key={booking._id}
+                        className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4"
+                      >
+                        <p className="font-semibold text-zinc-900">
+                          {booking.service?.name ||
+                            booking.serviceName ||
+                            "Service"}
+                        </p>
+
+                        <p className="mt-1 text-sm text-zinc-600">
+                          {booking.date || "-"} {booking.time || ""}
+                        </p>
+
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 ring-1 ring-zinc-200">
+                            {booking.status}
+                          </span>
+
+                          <span className="text-sm font-bold text-zinc-900">
+                            {formatMoney(booking.price)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {!selectedCustomer.bookings?.length && (
+                      <p className="text-sm text-zinc-500">
+                        No bookings for this customer.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </aside>
         </div>
       </div>
     </div>

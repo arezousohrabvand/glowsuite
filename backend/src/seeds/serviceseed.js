@@ -1,128 +1,94 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import Service from "../models/Service.js";
+import User from "../models/User.js";
 
 dotenv.config();
 
-const services = [
+const stylists = [
   {
-    name: "Signature Haircut & Finish",
-    category: "Cuts",
-    price: 75,
-    duration: 60,
-    description:
-      "A precision haircut tailored to your face shape, texture, and styling goals, finished with a polished salon blowout.",
+    firstName: "Charlotte",
+    lastName: "Kim",
+    email: "charlotte.kim@glowsuite.com",
+    password: "Stylist123!",
+    role: "stylist",
+    image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
   },
   {
-    name: "Luxury Blowout & Style",
-    category: "Styling",
-    price: 55,
-    duration: 45,
-    description:
-      "Smooth, voluminous, and long-lasting blowout styling for everyday polish or special events.",
+    firstName: "Mia",
+    lastName: "Carter",
+    email: "mia.carter@glowsuite.com",
+    password: "Stylist123!",
+    role: "stylist",
+    image:
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
   },
   {
-    name: "Signature Balayage",
-    category: "Color",
-    price: 220,
-    duration: 180,
-    description:
-      "Soft blended dimension with a luxury lived-in finish, customized to your tone, depth, and maintenance preference.",
+    firstName: "Sophia",
+    lastName: "Bennett",
+    email: "sophia.bennett@glowsuite.com",
+    password: "Stylist123!",
+    role: "stylist",
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80",
   },
   {
-    name: "Bridal Hair & Preview",
-    category: "Bridal",
-    price: 140,
-    duration: 90,
-    description:
-      "Elegant bridal styling with preview planning, secure structure, and a photo-ready luxury finish.",
+    firstName: "Olivia",
+    lastName: "Reed",
+    email: "olivia.reed@glowsuite.com",
+    password: "Stylist123!",
+    role: "stylist",
+    image:
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=900&q=80",
   },
   {
-    name: "Curl Definition Treatment",
-    category: "Texture",
-    price: 95,
-    duration: 75,
-    description:
-      "Hydrating curl-focused treatment and styling service designed to reduce frizz and enhance natural definition.",
-  },
-  {
-    name: "Keratin Smoothing Service",
-    category: "Treatment",
-    price: 250,
-    duration: 150,
-    description:
-      "A smoothing treatment for softness, shine, and easier styling with reduced frizz and polished movement.",
-  },
-  {
-    name: "Scalp Reset & Repair",
-    category: "Wellness",
-    price: 65,
-    duration: 50,
-    description:
-      "A restorative scalp and hair wellness service focused on hydration, balance, and healthier roots.",
-  },
-  {
-    name: "Face-Framing & Fringe Refresh",
-    category: "Cuts",
-    price: 35,
-    duration: 30,
-    description:
-      "A quick refresh service for bangs, face-framing pieces, and shape detailing between full haircuts.",
-  },
-  {
-    name: "Gloss & Tone Refresh",
-    category: "Color",
-    price: 70,
-    duration: 45,
-    description:
-      "Refresh shine, neutralize tone, and revive your color with a customized gloss service.",
-  },
-  {
-    name: "Editorial Waves Styling",
-    category: "Styling",
-    price: 65,
-    duration: 50,
-    description:
-      "Soft glam waves with movement, polish, and an editorial-inspired finish for events or content days.",
-  },
-  {
-    name: "Bridal Party Styling",
-    category: "Bridal",
-    price: 120,
-    duration: 120,
-    description:
-      "Coordinated event styling for bridal parties with polished looks, timing support, and elegant finishing.",
-  },
-  {
-    name: "Deep Repair Mask & Blowdry",
-    category: "Treatment",
-    price: 80,
-    duration: 55,
-    description:
-      "A nourishing treatment mask paired with a smooth blowdry to restore softness, shine, and manageability.",
+    firstName: "Isabella",
+    lastName: "Moore",
+    email: "isabella.moore@glowsuite.com",
+    password: "Stylist123!",
+    role: "stylist",
+    image:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80",
   },
 ];
 
-const seedServices = async () => {
+async function seedStylists() {
   try {
-    console.log("MONGO_URI:", process.env.MONGO_URI);
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected DB:", mongoose.connection.name);
 
-    const deleted = await Service.deleteMany({});
-    console.log("Deleted count:", deleted.deletedCount);
+    for (const stylist of stylists) {
+      const existing = await User.findOne({ email: stylist.email });
 
-    const inserted = await Service.insertMany(services);
-    console.log("Inserted count:", inserted.length);
+      if (existing) {
+        existing.firstName = stylist.firstName;
+        existing.lastName = stylist.lastName;
+        existing.role = "stylist";
+        existing.image = stylist.image;
+        await existing.save();
+        console.log(
+          `Updated stylist: ${stylist.firstName} ${stylist.lastName}`,
+        );
+      } else {
+        const hashedPassword = await bcrypt.hash(stylist.password, 10);
 
-    const all = await Service.find().select("name category price");
-    console.log("Services now in DB:", all);
+        await User.create({
+          ...stylist,
+          password: hashedPassword,
+        });
 
+        console.log(
+          `Created stylist: ${stylist.firstName} ${stylist.lastName}`,
+        );
+      }
+    }
+
+    console.log("Stylist seed complete");
     process.exit(0);
   } catch (error) {
-    console.error("Seed error:", error);
+    console.error("Seed stylists error:", error);
     process.exit(1);
   }
-};
+}
 
-seedServices();
+seedStylists();

@@ -75,7 +75,7 @@ async function findStylistUserByName(stylistName) {
 
   if (stylistUser) return stylistUser;
 
-  stylistUser = await User.findOne({
+  return User.findOne({
     role: "stylist",
     $expr: {
       $regexMatch: {
@@ -85,8 +85,6 @@ async function findStylistUserByName(stylistName) {
       },
     },
   });
-
-  return stylistUser;
 }
 
 /* =========================
@@ -319,23 +317,11 @@ export const createBookingCheckoutSession = async (req, res) => {
 
 export const createBooking = async (req, res) => {
   try {
-    const { fullName, phone, email, serviceId, stylistId, date, time, notes } =
-      req.body;
-
-    const booking = {
+    res.status(201).json({
       _id: "temp123",
-      fullName,
-      phone,
-      email,
-      serviceId,
-      stylistId,
-      date,
-      time,
-      notes,
+      ...req.body,
       status: "Pending",
-    };
-
-    res.status(201).json(booking);
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -386,13 +372,8 @@ export const holdBookingSlot = async (req, res) => {
     }
 
     await SlotHold.updateMany(
-      {
-        user: req.user._id,
-        status: "active",
-      },
-      {
-        $set: { status: "released" },
-      },
+      { user: req.user._id, status: "active" },
+      { $set: { status: "released" } },
     );
 
     const hold = await SlotHold.create({
@@ -525,15 +506,12 @@ export const markBookingPaidAfterSuccess = async (req, res) => {
         billing.booking,
         {
           $set: {
-            status: "Confirmed",
+            status: "Pending",
             paymentStatus: "paid",
             paidAt: new Date(),
           },
         },
-        {
-          returnDocument: "after",
-          runValidators: false,
-        },
+        { returnDocument: "after", runValidators: false },
       );
 
       if (booking) {
@@ -545,16 +523,12 @@ export const markBookingPaidAfterSuccess = async (req, res) => {
             time: booking.time,
             status: "active",
           },
-          {
-            $set: { status: "converted" },
-          },
+          { $set: { status: "converted" } },
         );
       }
     }
 
-    res.status(200).json({
-      message: "Booking payment marked as paid",
-    });
+    res.status(200).json({ message: "Booking payment marked as paid" });
   } catch (error) {
     console.error("markBookingPaidAfterSuccess error:", error);
     res.status(500).json({ message: error.message });
@@ -562,7 +536,7 @@ export const markBookingPaidAfterSuccess = async (req, res) => {
 };
 
 /* =========================
-   Cancel booking + refund
+   Cancel booking - no auto refund
 ========================= */
 
 export const cancelBooking = async (req, res) => {
@@ -593,64 +567,16 @@ export const cancelBooking = async (req, res) => {
       });
     }
 
-    const billing = await Billing.findOne({ booking: booking._id });
-
-    const isPaid =
-      String(booking.paymentStatus || "").toLowerCase() === "paid" ||
-      String(billing?.paymentStatus || "").toLowerCase() === "paid";
-
-    let refund = null;
-
-    if (isPaid) {
-      if (!billing?.stripePaymentIntentId) {
-        return res.status(400).json({
-          message:
-            "Payment is marked as paid, but Stripe payment intent is missing for refund.",
-        });
-      }
-
-      refund = await stripe.refunds.create({
-        payment_intent: billing.stripePaymentIntentId,
-      });
-    }
-
     const updatedBooking = await Booking.findByIdAndUpdate(
       bookingId,
       {
         $set: {
           status: "Cancelled",
-          paymentStatus: isPaid
-            ? "refunded"
-            : booking.paymentStatus || "unpaid",
+          paymentStatus: booking.paymentStatus || "unpaid",
         },
       },
-      {
-        returnDocument: "after",
-        runValidators: false,
-      },
+      { returnDocument: "after", runValidators: false },
     );
-
-    if (billing) {
-      await Billing.findByIdAndUpdate(
-        billing._id,
-        {
-          $set: {
-            status: isPaid ? "refunded" : "cancelled",
-            paymentStatus: isPaid
-              ? "refunded"
-              : billing.paymentStatus || "pending",
-            refundAmount: isPaid
-              ? Number(billing.total || billing.amount || 0)
-              : 0,
-            stripeRefundId: refund?.id || "",
-          },
-        },
-        {
-          returnDocument: "after",
-          runValidators: false,
-        },
-      );
-    }
 
     await SlotHold.updateMany(
       {
@@ -660,24 +586,71 @@ export const cancelBooking = async (req, res) => {
         time: booking.time,
         status: "active",
       },
-      {
-        $set: { status: "released" },
-      },
+      { $set: { status: "released" } },
     );
 
     return res.status(200).json({
-      message: isPaid
-        ? "Booking cancelled and payment refunded successfully"
-        : "Booking cancelled successfully",
+      message:
+        booking.paymentStatus === "paid"
+          ? "Booking cancelled. Refund must be handled by admin."
+          : "Booking cancelled successfully.",
       booking: updatedBooking,
-      refunded: isPaid,
-      refundId: refund?.id || null,
+      refunded: false,
     });
   } catch (error) {
     console.error("cancelBooking error:", error);
     return res.status(500).json({
       message: error.message || "Failed to cancel booking",
     });
+  }
+};
+
+/* =========================
+   Admin: update booking status
+========================= */
+
+export const updateBookingStatusByAdmin = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = ["Upcoming", "Cancelled"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status update" });
+    }
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.status === "Completed") {
+      return res.status(400).json({
+        message: "Completed booking cannot be changed",
+      });
+    }
+
+    if (booking.status === "Cancelled") {
+      return res.status(400).json({
+        message: "Cancelled booking cannot be changed",
+      });
+    }
+
+    booking.status = status;
+    await booking.save();
+
+    return res.status(200).json({
+      message:
+        status === "Upcoming"
+          ? "Booking approved successfully"
+          : "Booking cancelled successfully. Refund must be handled separately.",
+      booking,
+    });
+  } catch (error) {
+    console.error("updateBookingStatusByAdmin error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -760,9 +733,7 @@ export const rescheduleBooking = async (req, res) => {
     });
 
     if (existingBooking) {
-      return res.status(409).json({
-        message: "This slot is already booked",
-      });
+      return res.status(409).json({ message: "This slot is already booked" });
     }
 
     const updatedBooking = await Booking.findByIdAndUpdate(
@@ -779,10 +750,7 @@ export const rescheduleBooking = async (req, res) => {
           status: booking.status === "Confirmed" ? "Upcoming" : booking.status,
         },
       },
-      {
-        returnDocument: "after",
-        runValidators: false,
-      },
+      { returnDocument: "after", runValidators: false },
     );
 
     res.status(200).json({

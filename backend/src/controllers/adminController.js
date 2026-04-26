@@ -518,37 +518,30 @@ export async function getAdminCustomerDetails(req, res) {
 // =========================
 // CLASSES
 // =========================
-export async function getAdminClasses(req, res) {
+export const getAdminClasses = async (req, res) => {
   try {
-    const classes = await Class.find()
-      .populate("instructor", "firstName lastName email")
-      .sort({ createdAt: -1 });
+    const classes = await ClassModel.find().sort({ createdAt: -1 });
 
-    const classIds = classes.map((item) => item._id);
+    const result = await Promise.all(
+      classes.map(async (classItem) => {
+        const enrolledCount = await Enrollment.countDocuments({
+          classItem: classItem._id,
+          status: { $in: ["pending", "paid"] },
+        });
 
-    const enrollments = await Enrollment.find({
-      class: { $in: classIds },
-    }).select("class");
+        return {
+          ...classItem.toObject(),
+          enrolledCount,
+        };
+      }),
+    );
 
-    const enrollmentCountMap = {};
-
-    for (const enrollment of enrollments) {
-      const key = String(enrollment.class);
-      enrollmentCountMap[key] = (enrollmentCountMap[key] || 0) + 1;
-    }
-
-    const result = classes.map((item) => ({
-      ...item.toObject(),
-      enrolledCount: enrollmentCountMap[String(item._id)] || 0,
-    }));
-
-    return res.json(result);
+    res.status(200).json(result);
   } catch (error) {
     console.error("getAdminClasses error:", error);
-    return res.status(500).json({ message: "Failed to load classes" });
+    res.status(500).json({ message: error.message });
   }
-}
-
+};
 export async function createAdminClass(req, res) {
   try {
     const { title, description, instructor, date, time, capacity, price } =
@@ -624,7 +617,7 @@ export async function deleteAdminClass(req, res) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    await Enrollment.deleteMany({ class: classId });
+    await Enrollment.deleteMany({ classItem: classId });
 
     return res.json({ message: "Class deleted successfully" });
   } catch (error) {
@@ -637,8 +630,8 @@ export async function getAdminClassEnrollments(req, res) {
   try {
     const { classId } = req.params;
 
-    const enrollments = await Enrollment.find({ class: classId })
-      .populate("user", "firstName lastName email")
+    const enrollments = await Enrollment.find({ classItem: classId })
+      .populate("customer", "firstName lastName email")
       .sort({ createdAt: -1 });
 
     return res.json(enrollments);
@@ -647,5 +640,64 @@ export async function getAdminClassEnrollments(req, res) {
     return res
       .status(500)
       .json({ message: "Failed to load class enrollments" });
+  }
+}
+
+export const getAllClassEnrollments = async (req, res) => {
+  try {
+    const enrollments = await Enrollment.find()
+      .populate("customer", "firstName lastName email")
+      .populate("classItem", "title date time price capacity")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(enrollments);
+  } catch (error) {
+    console.error("getAllClassEnrollments error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+export const cleanBrokenEnrollments = async (req, res) => {
+  try {
+    const result = await Enrollment.deleteMany({
+      $or: [{ customer: null }, { customer: { $exists: false } }],
+    });
+
+    res.json({
+      message: "Broken enrollments removed",
+      deleted: result.deletedCount,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Cleanup failed" });
+  }
+};
+export async function getAdminRevenue(req, res) {
+  try {
+    const paidBillings = await Billing.find({
+      paymentStatus: "paid",
+    });
+
+    const bookingRevenue = paidBillings
+      .filter((b) => b.type === "booking")
+      .reduce((sum, b) => sum + Number(b.total || b.amount || 0), 0);
+
+    const classRevenue = paidBillings
+      .filter((b) => b.type === "class")
+      .reduce((sum, b) => sum + Number(b.total || b.amount || 0), 0);
+
+    const totalRevenue = bookingRevenue + classRevenue;
+
+    return res.json({
+      totalRevenue,
+      bookingRevenue,
+      classRevenue,
+      paidCount: paidBillings.length,
+      records: paidBillings,
+    });
+  } catch (error) {
+    console.error("getAdminRevenue error:", error);
+    return res.status(500).json({
+      message: "Failed to load revenue",
+    });
   }
 }

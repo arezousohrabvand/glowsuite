@@ -132,3 +132,7 @@ export async function getAdminCalendar(view = "month", date = "") {
   const { data } = await API.get("/admin/calendar", { params });
   return data;
 }
+export async function getAdminEnrollments() {
+  const { data } = await API.get("/admin/enrollments");
+  return data;
+}

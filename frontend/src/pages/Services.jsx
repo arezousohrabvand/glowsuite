@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { servicesData } from "../data/servicesData";
+import axios from "axios";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 const categories = [
   "All",
@@ -11,6 +16,24 @@ const categories = [
   "Treatment",
   "Wellness",
 ];
+
+function normalizeService(service) {
+  return {
+    id: service._id,
+    _id: service._id,
+    name: service.name,
+    category: service.category || "Other",
+    price: `$${Number(service.price || 0).toFixed(2)}`,
+    rawPrice: service.price,
+    duration: `${service.duration || service.durationMinutes || 60} min`,
+    description: service.description || "Premium salon service.",
+    stylist: service.stylistName || "GlowSuite stylist",
+    image:
+      service.image ||
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
+    features: service.features || [],
+  };
+}
 
 function ServiceBadge({ children }) {
   return (
@@ -24,10 +47,35 @@ export default function Services() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get("category") || "All";
 
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadServices() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/services`);
+        const data = Array.isArray(res.data) ? res.data : [];
+
+        if (data.length > 0) {
+          setServices(data.map(normalizeService));
+        } else {
+          setServices(servicesData);
+        }
+      } catch (error) {
+        console.error("Failed to load services:", error);
+        setServices(servicesData);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadServices();
+  }, []);
+
   const filteredServices =
     selectedCategory === "All"
-      ? servicesData
-      : servicesData.filter(
+      ? services
+      : services.filter(
           (service) =>
             String(service.category).toLowerCase() ===
             String(selectedCategory).toLowerCase(),
@@ -41,8 +89,13 @@ export default function Services() {
       setSearchParams({});
       return;
     }
+
     setSearchParams({ category: cat });
   };
+
+  if (loading) {
+    return <div className="p-10 text-zinc-600">Loading services...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-white text-zinc-900">
@@ -82,31 +135,14 @@ export default function Services() {
                 View Services
               </a>
             </div>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <span className="rounded-full bg-white px-4 py-2 text-sm text-zinc-700 shadow-sm ring-1 ring-zinc-100">
-                Expert stylists
-              </span>
-              <span className="rounded-full bg-white px-4 py-2 text-sm text-zinc-700 shadow-sm ring-1 ring-zinc-100">
-                Luxury products
-              </span>
-              <span className="rounded-full bg-white px-4 py-2 text-sm text-zinc-700 shadow-sm ring-1 ring-zinc-100">
-                Tailored consultations
-              </span>
-            </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute -right-4 -top-4 h-24 w-24 animate-spin rounded-full border border-rose-200 border-dashed opacity-70 [animation-duration:12s]" />
-            <div className="absolute -left-5 bottom-8 h-16 w-16 animate-spin rounded-full border border-fuchsia-200 border-dashed opacity-60 [animation-duration:10s]" />
-
-            <div className="overflow-hidden rounded-[2rem] shadow-2xl ring-1 ring-black/5">
-              <img
-                src="https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1400&q=80"
-                alt="Luxury salon hairstyle"
-                className="h-[440px] w-full object-cover"
-              />
-            </div>
+          <div className="overflow-hidden rounded-[2rem] shadow-2xl ring-1 ring-black/5">
+            <img
+              src="https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1400&q=80"
+              alt="Luxury salon hairstyle"
+              className="h-[440px] w-full object-cover"
+            />
           </div>
         </div>
       </section>
@@ -204,6 +240,7 @@ export default function Services() {
                   className="h-72 w-full object-cover transition duration-500 group-hover:scale-110"
                 />
               </div>
+
               <div className="p-4">
                 <p className="text-sm font-semibold text-zinc-900">
                   {item.name}
@@ -251,8 +288,6 @@ export default function Services() {
               key={service.id}
               className="group relative overflow-hidden rounded-[2rem] border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-2xl"
             >
-              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br from-rose-200 to-fuchsia-200 opacity-50 blur-2xl transition duration-500 group-hover:rotate-45" />
-
               <div className="overflow-hidden">
                 <img
                   src={service.image}
@@ -309,6 +344,7 @@ export default function Services() {
                     >
                       Details
                     </Link>
+
                     <Link
                       to={`/booking?service=${service.id}`}
                       className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
@@ -327,40 +363,6 @@ export default function Services() {
             No services found in this category.
           </p>
         )}
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-20 md:px-10 lg:px-12">
-        <div className="overflow-hidden rounded-[2.25rem] bg-zinc-900 px-8 py-12 text-white shadow-2xl">
-          <div className="grid items-center gap-8 lg:grid-cols-2">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-300">
-                Tailored salon experience
-              </p>
-              <h2 className="mt-3 text-3xl font-bold md:text-4xl">
-                Not sure which service fits you best?
-              </h2>
-              <p className="mt-4 max-w-xl text-white/75">
-                Book a consultation and we’ll match you with the right stylist,
-                service plan, and look based on your hair goals.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-4 lg:justify-end">
-              <Link
-                to="/booking"
-                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-rose-100"
-              >
-                Book Consultation
-              </Link>
-              <Link
-                to="/stylists"
-                className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Meet Our Stylists
-              </Link>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
   );

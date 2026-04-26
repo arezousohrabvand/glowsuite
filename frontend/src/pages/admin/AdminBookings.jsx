@@ -6,9 +6,7 @@ function formatBookingDate(booking) {
 
   if (booking.slotStart) {
     const d = new Date(booking.slotStart);
-    if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleDateString();
-    }
+    if (!Number.isNaN(d.getTime())) return d.toLocaleDateString();
   }
 
   return "-";
@@ -47,6 +45,15 @@ function getServiceName(booking) {
   return booking.serviceName || booking.service?.name || "N/A";
 }
 
+function getStatusBadgeClass(status) {
+  const normalized = String(status || "").toLowerCase();
+
+  if (normalized === "pending") return "bg-amber-50 text-amber-700";
+  if (normalized === "upcoming") return "bg-blue-50 text-blue-700";
+
+  return "bg-zinc-100 text-zinc-700";
+}
+
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
@@ -56,8 +63,22 @@ export default function AdminBookings() {
   async function loadBookings() {
     try {
       setLoading(true);
+
       const data = await getAdminBookings(statusFilter);
-      setBookings(Array.isArray(data) ? data : []);
+      const cleanData = Array.isArray(data) ? data : [];
+
+      const visibleBookings = cleanData.filter((booking) => {
+        const status = String(booking.status || "pending").toLowerCase();
+        const filter = String(statusFilter || "").toLowerCase();
+
+        if (filter === "pending") return status === "pending";
+        if (filter === "upcoming") return status === "upcoming";
+
+        // Active Bookings means pending only
+        return status === "pending";
+      });
+
+      setBookings(visibleBookings);
     } catch (error) {
       console.error("Failed to load admin bookings:", error);
       alert(error.response?.data?.message || "Failed to load bookings");
@@ -86,24 +107,21 @@ export default function AdminBookings() {
   return (
     <div className="mx-auto max-w-7xl p-6">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold">Manage Bookings</h1>
+        <h1 className="text-3xl font-bold text-zinc-900">Manage Bookings</h1>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-zinc-300 px-4 py-2"
+          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900"
         >
-          <option value="">All Statuses</option>
+          <option value="">Active Bookings</option>
           <option value="Pending">Pending</option>
           <option value="Upcoming">Upcoming</option>
-          <option value="Confirmed">Confirmed</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
         </select>
       </div>
 
       {loading ? (
-        <p>Loading bookings...</p>
+        <p className="text-zinc-600">Loading bookings...</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm">
           <table className="min-w-full text-left">
@@ -121,55 +139,58 @@ export default function AdminBookings() {
 
             <tbody>
               {bookings.map((booking) => {
-                const status = booking.status || "";
+                const status = booking.status || "Pending";
+                const normalizedStatus = String(status).toLowerCase();
                 const isUpdating = updatingId === booking._id;
 
-                const canApprove =
-                  status === "Pending" || status === "Upcoming";
+                const canApprove = normalizedStatus === "pending";
                 const canCancel =
-                  status !== "Cancelled" && status !== "Completed";
-                const canComplete =
-                  status === "Confirmed" || status === "Upcoming";
+                  normalizedStatus === "pending" ||
+                  normalizedStatus === "upcoming";
 
                 return (
-                  <tr key={booking._id} className="border-t">
+                  <tr key={booking._id} className="border-t border-zinc-200">
                     <td className="px-4 py-3">{getCustomerName(booking)}</td>
                     <td className="px-4 py-3">{getServiceName(booking)}</td>
                     <td className="px-4 py-3">{getStylistName(booking)}</td>
                     <td className="px-4 py-3">{formatBookingDate(booking)}</td>
                     <td className="px-4 py-3">{formatBookingTime(booking)}</td>
-                    <td className="px-4 py-3">{status || "-"}</td>
+
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(
+                          status,
+                        )}`}
+                      >
+                        {status}
+                      </span>
+                    </td>
+
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() =>
-                            handleStatusChange(booking._id, "Confirmed")
-                          }
-                          disabled={!canApprove || isUpdating}
-                          className="rounded bg-emerald-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          {isUpdating ? "Saving..." : "Approve"}
-                        </button>
+                        {canApprove && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(booking._id, "Upcoming")
+                            }
+                            disabled={isUpdating}
+                            className="rounded bg-emerald-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {isUpdating ? "Saving..." : "Approve"}
+                          </button>
+                        )}
 
-                        <button
-                          onClick={() =>
-                            handleStatusChange(booking._id, "Cancelled")
-                          }
-                          disabled={!canCancel || isUpdating}
-                          className="rounded bg-red-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Cancel
-                        </button>
-
-                        <button
-                          onClick={() =>
-                            handleStatusChange(booking._id, "Completed")
-                          }
-                          disabled={!canComplete || isUpdating}
-                          className="rounded bg-blue-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                          Complete
-                        </button>
+                        {canCancel && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(booking._id, "Cancelled")
+                            }
+                            disabled={isUpdating}
+                            className="rounded bg-red-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {isUpdating ? "Saving..." : "Cancel"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

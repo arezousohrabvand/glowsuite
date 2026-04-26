@@ -48,11 +48,10 @@ export async function getAdminBillingHistory(params = {}) {
   const res = await billingClient.get("/admin/all", { params });
   return res.data;
 }
-
-export async function refundBilling(id, payload) {
-  const res = await billingClient.post(`/admin/${id}/refund`, payload);
+export const refundBilling = async (billingId, payload) => {
+  const res = await billingClient.post(`/admin/${billingId}/refund`, payload);
   return res.data;
-}
+};
 
 export async function createCoupon(payload) {
   const res = await billingClient.post("/admin/coupons", payload);

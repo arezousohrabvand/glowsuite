@@ -17,6 +17,7 @@ const adminLinks = [
   { to: "/admin/calendar", label: "Admin Calendar", icon: "🗂️" },
   { to: "/admin/billing", label: "Admin Billing", icon: "💳" },
   { to: "/admin/revenue", label: "Admin Revenue", icon: "📈" },
+  { to: "/admin/enrollments", label: "Class Enrollments", icon: "🎓" },
 ];
 
 export default function Sidebar() {

@@ -1,5 +1,64 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import axios from "axios";
 import { servicesData } from "../data/servicesData";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+function normalizeService(service) {
+  return {
+    id: service._id || service.id,
+    _id: service._id || service.id,
+    slug: service.slug,
+    name: service.name || "Service",
+    category: service.category || "Other",
+    price:
+      typeof service.price === "string"
+        ? service.price
+        : `$${Number(service.price || 0).toFixed(2)}`,
+    duration:
+      typeof service.duration === "string"
+        ? service.duration
+        : `${service.duration || service.durationMinutes || 60} min`,
+    description: service.description || "Premium salon service.",
+    longDescription:
+      service.longDescription ||
+      service.description ||
+      "A premium salon service tailored to your hair goals.",
+    stylist: service.stylist || service.stylistName || "GlowSuite stylist",
+    stylistRole: service.stylistRole || "Salon specialist",
+    stylistExperience:
+      service.stylistExperience || "Experienced GlowSuite salon professional",
+    image:
+      service.image ||
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
+    features: service.features?.length
+      ? service.features
+      : ["Consultation included"],
+    benefits: service.benefits?.length
+      ? service.benefits
+      : ["Personalized service", "Professional salon care", "Polished finish"],
+    bestFor: service.bestFor?.length
+      ? service.bestFor
+      : ["Clients wanting a premium salon result"],
+    gallery: service.gallery?.length
+      ? service.gallery
+      : [
+          service.image ||
+            "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
+        ],
+  };
+}
+
+function findService(list, id) {
+  return list.find(
+    (item) =>
+      String(item._id) === String(id) ||
+      String(item.id) === String(id) ||
+      String(item.slug) === String(id),
+  );
+}
 
 function InfoCard({ label, value }) {
   return (
@@ -23,7 +82,66 @@ function Badge({ children }) {
 export default function ServiceDetails() {
   const { id } = useParams();
 
-  const service = servicesData.find((item) => String(item.id) === String(id));
+  const [service, setService] = useState(null);
+  const [relatedServices, setRelatedServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadService() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/services`);
+        const backendData = Array.isArray(res.data) ? res.data : [];
+
+        const source =
+          backendData.length > 0
+            ? backendData.map(normalizeService)
+            : servicesData.map(normalizeService);
+
+        const selected = findService(source, id);
+
+        setService(selected || null);
+
+        if (selected) {
+          setRelatedServices(
+            source
+              .filter(
+                (item) =>
+                  item.category === selected.category &&
+                  String(item._id) !== String(selected._id),
+              )
+              .slice(0, 3),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load service details:", error);
+
+        const fallbackData = servicesData.map(normalizeService);
+        const selected = findService(fallbackData, id);
+
+        setService(selected || null);
+
+        if (selected) {
+          setRelatedServices(
+            fallbackData
+              .filter(
+                (item) =>
+                  item.category === selected.category &&
+                  String(item._id) !== String(selected._id),
+              )
+              .slice(0, 3),
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadService();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-10 text-zinc-600">Loading service details...</div>;
+  }
 
   if (!service) {
     return (
@@ -42,18 +160,9 @@ export default function ServiceDetails() {
     );
   }
 
-  const relatedServices = servicesData
-    .filter(
-      (item) => item.category === service.category && item.id !== service.id,
-    )
-    .slice(0, 3);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-white text-zinc-900">
       <section className="relative overflow-hidden border-b border-rose-100">
-        <div className="absolute -left-20 top-10 h-56 w-56 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-fuchsia-200/30 blur-3xl" />
-
         <div className="mx-auto max-w-7xl px-6 py-12 md:px-10 lg:px-12">
           <div className="mb-6">
             <Link
@@ -111,17 +220,10 @@ export default function ServiceDetails() {
                 <p className="mt-2 text-sm text-white/70">{service.duration}</p>
 
                 <Link
-                  to={`/booking?service=${service.id}`}
+                  to={`/booking?service=${service._id}`}
                   className="mt-6 block w-full rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-zinc-900 transition hover:bg-rose-100"
                 >
                   Book Appointment
-                </Link>
-
-                <Link
-                  to="/stylists"
-                  className="mt-3 block w-full rounded-full border border-white/20 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  Meet Our Stylists
                 </Link>
               </div>
 
@@ -145,32 +247,14 @@ export default function ServiceDetails() {
               Stylist Profile
             </p>
 
-            <div className="mt-6 flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-xl font-bold text-rose-700">
-                {service.stylist
-                  .split(" ")
-                  .map((part) => part[0])
-                  .join("")
-                  .slice(0, 2)}
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-bold text-zinc-900">
-                  {service.stylist}
-                </h2>
-                <p className="mt-1 text-sm font-medium text-zinc-600">
-                  {service.stylistRole}
-                </p>
-                <p className="mt-1 text-sm text-zinc-500">
-                  {service.stylistExperience}
-                </p>
-              </div>
-            </div>
-
-            <p className="mt-6 leading-7 text-zinc-600">
-              Our stylists focus on personalized results, luxury service, and
-              polished finishing details that suit your hair goals and
-              lifestyle.
+            <h2 className="mt-6 text-2xl font-bold text-zinc-900">
+              {service.stylist}
+            </h2>
+            <p className="mt-1 text-sm font-medium text-zinc-600">
+              {service.stylistRole}
+            </p>
+            <p className="mt-1 text-sm text-zinc-500">
+              {service.stylistExperience}
             </p>
           </div>
 
@@ -193,68 +277,16 @@ export default function ServiceDetails() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-4 md:px-10 lg:px-12">
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-500">
-            Inspiration Gallery
-          </p>
-          <h2 className="mt-2 text-3xl font-bold">Sample style results</h2>
-          <p className="mt-3 max-w-2xl text-zinc-600">
-            Explore style inspiration and polished salon finishes related to
-            this service.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {service.gallery.map((image, index) => (
-            <div
-              key={image}
-              className="group overflow-hidden rounded-[1.75rem] bg-white shadow-sm ring-1 ring-zinc-100"
-            >
-              <div className="overflow-hidden">
-                <img
-                  src={image}
-                  alt={`${service.name} gallery ${index + 1}`}
-                  className="h-80 w-full object-cover transition duration-500 group-hover:scale-110"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-14 md:px-10 lg:px-12">
-        <div className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-500">
-            Who this service is best for
-          </p>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {service.bestFor.map((item) => (
-              <div
-                key={item}
-                className="rounded-2xl bg-zinc-50 p-5 text-sm leading-6 text-zinc-700"
-              >
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {relatedServices.length > 0 && (
         <section className="mx-auto max-w-7xl px-6 pb-8 md:px-10 lg:px-12">
-          <div className="mb-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-500">
-              More in {service.category}
-            </p>
-            <h2 className="mt-2 text-3xl font-bold">Related services</h2>
-          </div>
+          <h2 className="mb-8 text-3xl font-bold">
+            More in {service.category}
+          </h2>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {relatedServices.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <img
@@ -270,16 +302,13 @@ export default function ServiceDetails() {
                   <h3 className="mt-2 text-xl font-bold text-zinc-900">
                     {item.name}
                   </h3>
-                  <p className="mt-2 text-sm text-zinc-600">
-                    Stylist: {item.stylist}
-                  </p>
 
                   <div className="mt-5 flex items-center justify-between">
                     <p className="text-lg font-bold text-zinc-900">
                       {item.price}
                     </p>
                     <Link
-                      to={`/services/${item.id}`}
+                      to={`/services/${item._id}`}
                       className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-900"
                     >
                       View
@@ -302,15 +331,11 @@ export default function ServiceDetails() {
               <h2 className="mt-3 text-3xl font-bold md:text-4xl">
                 Book {service.name} with our salon team
               </h2>
-              <p className="mt-4 max-w-xl text-white/75">
-                Reserve your appointment and enjoy a premium salon experience
-                designed around your hair goals.
-              </p>
             </div>
 
             <div className="flex flex-wrap gap-4 lg:justify-end">
               <Link
-                to={`/booking?service=${service.id}`}
+                to={`/booking?service=${service._id}`}
                 className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-rose-100"
               >
                 Book Now

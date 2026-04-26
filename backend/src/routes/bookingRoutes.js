@@ -8,8 +8,9 @@ import {
   markBookingPaidAfterSuccess,
   rescheduleBooking,
   cancelBooking,
+  updateBookingStatusByAdmin,
 } from "../controllers/bookingController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -22,6 +23,13 @@ router.post("/checkout", protect, createBookingCheckoutSession);
 router.get("/payment-success", protect, markBookingPaidAfterSuccess);
 router.put("/:bookingId/reschedule", protect, rescheduleBooking);
 router.put("/:bookingId/cancel", protect, cancelBooking);
+
+router.patch(
+  "/admin/bookings/:bookingId/status",
+  protect,
+  adminOnly,
+  updateBookingStatusByAdmin,
+);
 
 router.get("/test", (req, res) => {
   res.json({ message: "booking route works" });

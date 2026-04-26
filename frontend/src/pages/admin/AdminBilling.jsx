@@ -17,11 +17,19 @@ function formatDate(value) {
   return new Date(value).toLocaleDateString();
 }
 
+function canRefundBill(bill) {
+  const status = String(bill.paymentStatus || bill.status || "").toLowerCase();
+
+  return status === "paid" && Boolean(bill.stripePaymentIntentId);
+}
+
 export default function AdminBilling() {
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refundState, setRefundState] = useState({});
+  const [refundingId, setRefundingId] = useState("");
+
   const [couponForm, setCouponForm] = useState({
     code: "",
     type: "percent",
@@ -34,6 +42,7 @@ export default function AdminBilling() {
     try {
       setLoading(true);
       setError("");
+
       const data = await getAdminBillingHistory();
       setBills(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -49,13 +58,15 @@ export default function AdminBilling() {
 
   const stats = useMemo(() => {
     const revenue = bills.reduce(
-      (sum, item) => sum + Number(item.total || 0),
+      (sum, item) => sum + Number(item.total || item.amount || 0),
       0,
     );
+
     const refunded = bills.reduce(
-      (sum, item) => sum + Number(item.refundedAmount || 0),
+      (sum, item) => sum + Number(item.refundAmount || 0),
       0,
     );
+
     return {
       records: bills.length,
       revenue,
@@ -63,22 +74,45 @@ export default function AdminBilling() {
     };
   }, [bills]);
 
-  const handleRefund = async (billId) => {
-    const refundInfo = refundState[billId] || {};
-    const amount = Number(refundInfo.amount || 0);
-    const reason = refundInfo.reason || "";
-
-    if (!amount) {
-      alert("Enter refund amount");
+  const handleRefund = async (bill) => {
+    if (!canRefundBill(bill)) {
+      alert("Only paid records with a Stripe payment intent can be refunded.");
       return;
     }
 
+    const refundInfo = refundState[bill._id] || {};
+    const refundAmount = Number(
+      refundInfo.amount || bill.total || bill.amount || 0,
+    );
+    const reason = refundInfo.reason || "Admin refund";
+
+    if (!refundAmount || refundAmount <= 0) {
+      alert("Enter a valid refund amount");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Refund ${formatMoney(refundAmount, bill.currency)} for this payment?`,
+    );
+
+    if (!confirmed) return;
+
     try {
-      await refundBilling(billId, { amount, reason });
+      setRefundingId(bill._id);
+
+      await refundBilling(bill._id, {
+        refundAmount,
+        reason,
+      });
+
       await loadBills();
-      alert("Refund submitted successfully");
+
+      alert("Refund completed successfully");
     } catch (error) {
+      console.error("Refund failed:", error);
       alert(error?.response?.data?.message || "Refund failed");
+    } finally {
+      setRefundingId("");
     }
   };
 
@@ -123,6 +157,7 @@ export default function AdminBilling() {
           <p className="text-sm uppercase tracking-[0.22em] text-rose-500">
             Admin Billing
           </p>
+
           <h1 className="mt-2 text-3xl font-bold text-zinc-900">
             Revenue, coupons, refunds, and Stripe sync
           </h1>
@@ -246,67 +281,125 @@ export default function AdminBilling() {
                   <th className="px-6 py-4">Total</th>
                   <th className="px-6 py-4">Refunded</th>
                   <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Stripe PI</th>
                   <th className="px-6 py-4">Refund Action</th>
                 </tr>
               </thead>
+
               <tbody>
-                {bills.map((bill) => (
-                  <tr key={bill._id} className="border-t border-zinc-100">
-                    <td className="px-6 py-4 font-medium">
-                      {bill.invoiceNumber}
-                    </td>
-                    <td className="px-6 py-4">{bill.title}</td>
-                    <td className="px-6 py-4 capitalize">{bill.type}</td>
-                    <td className="px-6 py-4">{formatDate(bill.createdAt)}</td>
-                    <td className="px-6 py-4">
-                      {formatMoney(bill.total, bill.currency)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {formatMoney(bill.refundedAmount, bill.currency)}
-                    </td>
-                    <td className="px-6 py-4">{bill.paymentStatus}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex min-w-[280px] flex-col gap-2">
-                        <input
-                          type="number"
-                          placeholder="Refund amount"
-                          value={refundState[bill._id]?.amount || ""}
-                          onChange={(e) =>
-                            setRefundState((prev) => ({
-                              ...prev,
-                              [bill._id]: {
-                                ...prev[bill._id],
-                                amount: e.target.value,
-                              },
-                            }))
-                          }
-                          className="rounded-xl border border-zinc-300 px-3 py-2"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Refund reason"
-                          value={refundState[bill._id]?.reason || ""}
-                          onChange={(e) =>
-                            setRefundState((prev) => ({
-                              ...prev,
-                              [bill._id]: {
-                                ...prev[bill._id],
-                                reason: e.target.value,
-                              },
-                            }))
-                          }
-                          className="rounded-xl border border-zinc-300 px-3 py-2"
-                        />
-                        <button
-                          onClick={() => handleRefund(bill._id)}
-                          className="rounded-xl bg-rose-600 px-4 py-2 font-semibold text-white transition hover:bg-rose-700"
+                {bills.map((bill) => {
+                  const refundable = canRefundBill(bill);
+                  const status = String(
+                    bill.paymentStatus || bill.status || "pending",
+                  ).toLowerCase();
+
+                  return (
+                    <tr key={bill._id} className="border-t border-zinc-100">
+                      <td className="px-6 py-4 font-medium">
+                        {bill.invoiceNumber || bill._id?.slice(-8)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {bill.title || bill.description || "Billing record"}
+                      </td>
+
+                      <td className="px-6 py-4 capitalize">
+                        {bill.type || "booking"}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {formatDate(bill.createdAt)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {formatMoney(bill.total || bill.amount, bill.currency)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {formatMoney(bill.refundAmount, bill.currency)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            status === "refunded"
+                              ? "bg-rose-50 text-rose-700"
+                              : status === "paid"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-amber-50 text-amber-700"
+                          }`}
                         >
-                          Refund with Stripe
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {status}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-xs text-zinc-500">
+                        {bill.stripePaymentIntentId
+                          ? bill.stripePaymentIntentId.slice(0, 14) + "..."
+                          : "Missing"}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex min-w-[280px] flex-col gap-2">
+                          <input
+                            type="number"
+                            placeholder="Refund amount"
+                            value={
+                              refundState[bill._id]?.amount ||
+                              (refundable
+                                ? Number(bill.total || bill.amount || 0)
+                                : "")
+                            }
+                            onChange={(e) =>
+                              setRefundState((prev) => ({
+                                ...prev,
+                                [bill._id]: {
+                                  ...prev[bill._id],
+                                  amount: e.target.value,
+                                },
+                              }))
+                            }
+                            disabled={!refundable || refundingId === bill._id}
+                            className="rounded-xl border border-zinc-300 px-3 py-2 disabled:bg-zinc-100 disabled:text-zinc-400"
+                          />
+
+                          <input
+                            type="text"
+                            placeholder="Refund reason"
+                            value={refundState[bill._id]?.reason || ""}
+                            onChange={(e) =>
+                              setRefundState((prev) => ({
+                                ...prev,
+                                [bill._id]: {
+                                  ...prev[bill._id],
+                                  reason: e.target.value,
+                                },
+                              }))
+                            }
+                            disabled={!refundable || refundingId === bill._id}
+                            className="rounded-xl border border-zinc-300 px-3 py-2 disabled:bg-zinc-100 disabled:text-zinc-400"
+                          />
+
+                          <button
+                            onClick={() => handleRefund(bill)}
+                            disabled={!refundable || refundingId === bill._id}
+                            className="rounded-xl bg-rose-600 px-4 py-2 font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
+                          >
+                            {refundingId === bill._id
+                              ? "Refunding..."
+                              : status === "refunded"
+                                ? "Already Refunded"
+                                : !bill.stripePaymentIntentId
+                                  ? "Missing Stripe PI"
+                                  : status !== "paid"
+                                    ? "Not Paid"
+                                    : "Refund with Stripe"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 

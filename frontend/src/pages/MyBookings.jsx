@@ -2,10 +2,24 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getMyBookings, cancelBooking } from "../api/bookingApi";
 
+function getUserDisplayStatus(status) {
+  const normalized = String(status || "pending").toLowerCase();
+
+  if (normalized === "upcoming") return "Confirmed";
+  if (normalized === "confirmed") return "Confirmed";
+  if (normalized === "pending") return "Pending";
+  if (normalized === "completed") return "Completed";
+  if (normalized === "cancelled" || normalized === "canceled")
+    return "Cancelled";
+
+  return "Pending";
+}
+
 function StatusBadge({ status }) {
+  const displayStatus = getUserDisplayStatus(status);
+
   const styles = {
     Pending: "bg-amber-50 text-amber-700 border-amber-200",
-    Upcoming: "bg-blue-50 text-blue-700 border-blue-200",
     Confirmed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     Completed: "bg-zinc-100 text-zinc-700 border-zinc-200",
     Cancelled: "bg-rose-50 text-rose-700 border-rose-200",
@@ -14,10 +28,10 @@ function StatusBadge({ status }) {
   return (
     <span
       className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-        styles[status] || "bg-zinc-100 text-zinc-700 border-zinc-200"
+        styles[displayStatus] || "bg-zinc-100 text-zinc-700 border-zinc-200"
       }`}
     >
-      {status}
+      {displayStatus}
     </span>
   );
 }
@@ -48,13 +62,14 @@ function SectionHeader({ title, count, subtitle }) {
 }
 
 function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
+  const displayStatus = getUserDisplayStatus(booking.status);
   const isCompleted = booking.status === "Completed";
   const isCancelled = booking.status === "Cancelled";
   const paymentStatus = String(booking.paymentStatus || "").toLowerCase();
+
   const canPay =
     !["paid", "processing"].includes(paymentStatus) && !isCancelled;
-
-  const disableReschedule = isCompleted;
+  const disableReschedule = isCompleted || isCancelled;
   const disableCancel = isCompleted || isCancelled;
 
   return (
@@ -64,9 +79,11 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
             Appointment
           </p>
+
           <h3 className="mt-1 text-2xl font-semibold text-zinc-900">
             {booking.serviceName || "Service"}
           </h3>
+
           <p className="mt-1 text-sm text-zinc-500">
             Created{" "}
             {booking.createdAt
@@ -96,12 +113,12 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
           label="Payment Status"
           value={booking.paymentStatus || "Unpaid"}
         />
-        <InfoTile label="Booking Status" value={booking.status || "Pending"} />
+        <InfoTile label="Booking Status" value={displayStatus} />
         <InfoTile label="Booking ID" value={booking._id?.slice(-8) || "—"} />
         <InfoTile
           label="Amount Due"
           value={
-            String(booking.paymentStatus || "").toLowerCase() === "paid"
+            paymentStatus === "paid"
               ? "$0.00"
               : `$${Number(booking.price || 0).toFixed(2)}`
           }
@@ -151,19 +168,19 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
           {actionLoadingId === booking._id ? "Updating..." : "Cancel"}
         </button>
 
+        {isCancelled && (
+          <span className="text-sm font-medium text-zinc-500">
+            Cancelled appointments cannot be changed.
+          </span>
+        )}
+
         {isCompleted && (
           <span className="text-sm font-medium text-zinc-500">
             Completed appointments can no longer be changed.
           </span>
         )}
 
-        {isCancelled && !isCompleted && (
-          <span className="text-sm font-medium text-zinc-500">
-            Cancelled appointments cannot be cancelled again.
-          </span>
-        )}
-
-        {String(booking.paymentStatus || "").toLowerCase() === "paid" && (
+        {paymentStatus === "paid" && (
           <span className="text-sm font-medium text-emerald-600">
             Payment completed.
           </span>
@@ -186,6 +203,7 @@ export default function MyBookings() {
     try {
       setLoading(true);
       setPageError("");
+
       const data = await getMyBookings();
       setBookings(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -201,13 +219,17 @@ export default function MyBookings() {
   }, []);
 
   const grouped = useMemo(() => {
-    const active = bookings.filter((b) =>
-      ["Pending", "Upcoming", "Confirmed"].includes(b.status),
-    );
+    const active = bookings.filter((booking) => {
+      const status = String(booking.status || "pending").toLowerCase();
 
-    const past = bookings.filter((b) =>
-      ["Completed", "Cancelled"].includes(b.status),
-    );
+      return ["pending", "upcoming", "confirmed"].includes(status);
+    });
+
+    const past = bookings.filter((booking) => {
+      const status = String(booking.status || "").toLowerCase();
+
+      return ["completed", "cancelled", "canceled"].includes(status);
+    });
 
     return { active, past };
   }, [bookings]);
@@ -224,14 +246,19 @@ export default function MyBookings() {
     const confirmed = window.confirm(
       "Are you sure you want to cancel this booking?",
     );
+
     if (!confirmed) return;
 
     try {
       setActionLoadingId(id);
       setMessage("");
+
       const res = await cancelBooking(id);
 
-      setBookings((prev) => prev.map((b) => (b._id === id ? res.booking : b)));
+      setBookings((prev) =>
+        prev.map((booking) => (booking._id === id ? res.booking : booking)),
+      );
+
       setMessage("Booking cancelled successfully.");
     } catch (err) {
       console.error(err);
@@ -312,9 +339,11 @@ export default function MyBookings() {
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-rose-500">
             Client Booking History
           </p>
+
           <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-900">
             My Bookings
           </h1>
+
           <p className="mt-4 max-w-2xl text-zinc-600">
             Manage upcoming visits, reschedule appointments, cancel bookings,
             review payment status, and pay outstanding salon appointments.
@@ -346,9 +375,7 @@ export default function MyBookings() {
               <p className="mt-3 text-4xl font-bold text-zinc-900">
                 {stats.active}
               </p>
-              <p className="mt-2 text-sm text-zinc-500">
-                Pending, upcoming, or confirmed
-              </p>
+              <p className="mt-2 text-sm text-zinc-500">Pending or confirmed</p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -372,9 +399,11 @@ export default function MyBookings() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-2xl">
               ✨
             </div>
+
             <h2 className="mt-5 text-2xl font-bold text-zinc-900">
               No bookings yet
             </h2>
+
             <p className="mx-auto mt-3 max-w-md text-zinc-600">
               You have not scheduled any salon appointments yet.
             </p>
@@ -386,6 +415,7 @@ export default function MyBookings() {
               >
                 Book Appointment
               </Link>
+
               <Link
                 to="/services"
                 className="rounded-full border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-800 transition hover:border-zinc-900"
@@ -400,7 +430,7 @@ export default function MyBookings() {
               <SectionHeader
                 title="Upcoming Appointments"
                 count={grouped.active.length}
-                subtitle="Your active salon appointments that can still be managed."
+                subtitle="Pending bookings wait for admin approval. Approved bookings show as confirmed."
               />
 
               {grouped.active.length === 0 ? (

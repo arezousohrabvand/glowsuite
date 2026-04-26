@@ -12,6 +12,7 @@ import AdminBilling from "../pages/admin/AdminBilling";
 import EnrollmentPayment from "../pages/EnrollmentPayment";
 import AdminRevenue from "../pages/admin/AdminRevenue";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminEnrollments from "../pages/admin/AdminEnrollments";
 
 // Lazy pages
 const Landing = lazy(() => import("../pages/Landing"));
@@ -73,6 +74,7 @@ export default function AppRoutes() {
             <Route path="/classes/:id" element={<ClassDetails />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-cancel" element={<PaymentCancel />} />
+            <Route path="/admin/enrollments" element={<AdminEnrollments />} />
             <Route
               path="/enrollment-payment/:enrollmentId"
               element={<EnrollmentPayment />}
