@@ -1,0 +1,25 @@
+// src/modules/bookings/contracts/booking.dto.js
+
+export const toBookingDto = (booking) => ({
+  id: booking._id?.toString(),
+  user: booking.user?.toString(),
+  service: booking.service?.toString() || null,
+  serviceName: booking.serviceName,
+  stylist: booking.stylist?.toString(),
+  stylistName: booking.stylistName,
+  date: booking.date,
+  time: booking.time,
+  slotStart: booking.slotStart,
+  slotEnd: booking.slotEnd,
+  notes: booking.notes,
+  stylistNotes: booking.stylistNotes,
+  price: booking.price,
+  status: booking.status,
+  paymentStatus: booking.paymentStatus,
+  paidAt: booking.paidAt,
+  stripeSessionId: booking.stripeSessionId,
+  reminderEmailSent: booking.reminderEmailSent,
+  holdId: booking.holdId,
+  createdAt: booking.createdAt,
+  updatedAt: booking.updatedAt,
+});

@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import Booking from "./booking.model.js";
+import Booking from "../infrastructure/mongoose/booking.model.js";
 import Billing from "../../models/Billing.js";
 import Service from "../../models/Service.js";
 import SlotHold from "../../models/SlotHold.js";

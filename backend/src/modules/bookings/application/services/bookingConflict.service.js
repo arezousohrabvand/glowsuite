@@ -1,4 +1,4 @@
-import Booking from "./booking.model.js";
+import Booking from "../infrastructure/mongoose/booking.model.js";
 
 export const hasStylistSlotConflict = async ({
   stylistId,

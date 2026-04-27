@@ -11,9 +11,12 @@ import {
   updateBookingStatusByAdmin,
 } from "./booking.controller.js";
 import { protect, adminOnly } from "../../shared/middleware/authMiddleware.js";
-import Booking from "./booking.model.js";
-import { acquireLock, releaseLock } from "./lock.service.js";
-import { hasStylistSlotConflict } from "./bookingConflict.service.js";
+import Booking from "../infrastructure/mongoose/booking.model.js";
+import {
+  acquireLock,
+  releaseLock,
+} from "../application/services/lock.service.js";
+import { checkBookingConflict } from "../application/services/bookingConflict.service.js";
 import { createOutboxEvent } from "../../shared/utils/createOutboxEvent.js";
 
 const router = express.Router();
