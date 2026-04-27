@@ -1,4 +1,4 @@
-import redis from "../../shared/config/redisClient.js";
+import redisClient from "../../../../shared/config/redisClient.js";
 
 export const acquireLock = async (key, ttlSeconds = 30) => {
   const lockValue = `${Date.now()}-${Math.random()}`;

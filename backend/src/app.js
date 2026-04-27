@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 
-import classRoutes from "./routes/classRoutes.js";
+import classRoutes from "./modules/classes/api/class.routes.js";
 import authRoutes from "./routes/authRoutes.js";
-import bookingRoutes from "./modules/bookings/booking.routes.js";
+import bookingRoutes from "./modules/bookings/api/booking.routes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
@@ -13,6 +13,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import stripeRoutes from "./routes/stripeRoutes.js";
 import stylistRoutes from "./routes/stylistRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
+import serviceRoutes from "./modules/services/api/service.routes.js";
 
 import { stripeWebhookHandler } from "./controllers/paymentController.js";
 
@@ -65,6 +66,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/stylist", stylistRoutes);
 app.use("/api/instructor", instructorRoutes);
+app.use("/api/services", serviceRoutes);
 
 // ❌ MUST be last
 app.use(notFound);

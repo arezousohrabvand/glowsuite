@@ -1,14 +1,14 @@
 import Stripe from "stripe";
 import Booking from "../infrastructure/mongoose/booking.model.js";
-import Billing from "../../models/Billing.js";
-import Service from "../../models/Service.js";
-import SlotHold from "../../models/SlotHold.js";
-import User from "../../models/User.js";
+import Billing from "../../../models/Billing.js";
+import Service from "../../../models/Service.js";
+import SlotHold from "../../../models/SlotHold.js";
+import User from "../../../models/User.js";
 import {
   calculateBillingBreakdown,
   getValidCoupon,
-} from "../../shared/utils/billingMath.js";
-import { createOutboxEvent } from "../../shared/utils/createOutboxEvent.js";
+} from "../../../shared/utils/billingMath.js";
+import { createOutboxEvent } from "../../../shared/utils/createOutboxEvent.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 

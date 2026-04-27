@@ -1,0 +1,13 @@
+export const BOOKING_STATUS = {
+  PENDING: "Pending",
+  UPCOMING: "Upcoming",
+  CONFIRMED: "Confirmed",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+};
+
+export const ACTIVE_BOOKING_STATUSES = [
+  BOOKING_STATUS.PENDING,
+  BOOKING_STATUS.UPCOMING,
+  BOOKING_STATUS.CONFIRMED,
+];

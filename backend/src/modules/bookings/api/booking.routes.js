@@ -10,15 +10,14 @@ import {
   cancelBooking,
   updateBookingStatusByAdmin,
 } from "./booking.controller.js";
-import { protect, adminOnly } from "../../shared/middleware/authMiddleware.js";
+import { protect } from "../../../shared/middleware/authMiddleware.js";
 import Booking from "../infrastructure/mongoose/booking.model.js";
 import {
   acquireLock,
   releaseLock,
 } from "../application/services/lock.service.js";
-import { checkBookingConflict } from "../application/services/bookingConflict.service.js";
-import { createOutboxEvent } from "../../shared/utils/createOutboxEvent.js";
-
+import { createOutboxEvent } from "../../../shared/utils/createOutboxEvent.js";
+import { authorizeRoles } from "../../../shared/middleware/roleMiddleware.js";
 const router = express.Router();
 
 router.post("/hold-slot", protect, holdBookingSlot);
@@ -34,7 +33,7 @@ router.put("/:bookingId/cancel", protect, cancelBooking);
 router.patch(
   "/admin/bookings/:bookingId/status",
   protect,
-  adminOnly,
+  authorizeRoles("admin"),
   updateBookingStatusByAdmin,
 );
 
