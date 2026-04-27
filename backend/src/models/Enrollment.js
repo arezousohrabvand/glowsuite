@@ -6,12 +6,15 @@ const enrollmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     classItem: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Class",
       required: true,
+      index: true,
     },
+
     status: {
       type: String,
       enum: ["pending", "paid", "cancelled"],
@@ -23,20 +26,29 @@ const enrollmentSchema = new mongoose.Schema(
       enum: ["unpaid", "paid", "failed", "refunded"],
       default: "unpaid",
     },
+
     amount: {
       type: Number,
       required: true,
       default: 0,
     },
+
     stripeSessionId: {
       type: String,
       default: "",
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true },
 );
 
+// Prevent duplicate enrollment per user per class
 enrollmentSchema.index({ customer: 1, classItem: 1 }, { unique: true });
 
 const Enrollment = mongoose.model("Enrollment", enrollmentSchema);
+
 export default Enrollment;

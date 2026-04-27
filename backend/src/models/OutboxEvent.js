@@ -38,6 +38,9 @@ const outboxEventSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    provider: String,
+    providerMessageId: String,
+    sentAt: Date,
 
     processedAt: {
       type: Date,

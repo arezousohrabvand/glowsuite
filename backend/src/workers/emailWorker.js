@@ -66,10 +66,12 @@ export const processEmailOutbox = async () => {
 
   try {
     const email = buildEmail(event);
-
-    await sendEmail(email);
+    const result = await sendEmail(email);
 
     event.status = "processed";
+    event.provider = result.provider;
+    event.providerMessageId = result.messageId;
+    event.sentAt = new Date();
     event.processedAt = new Date();
 
     await event.save();

@@ -4,14 +4,16 @@ export const createOutboxEmail = async ({
   type,
   recipientEmail,
   subject,
-  payload,
+  payload = {},
   scheduledFor = new Date(),
 }) => {
   return OutboxEvent.create({
     type,
-    recipientEmail,
-    subject,
-    payload,
+    payload: {
+      email: recipientEmail, // ✅ FIX HERE
+      subject,
+      ...payload,
+    },
     scheduledFor,
   });
 };

@@ -2,17 +2,13 @@ import Stripe from "stripe";
 import Enrollment from "../models/Enrollment.js";
 import Class from "../models/Class.js";
 import Billing from "../models/Billing.js";
-import { createOutboxEvent } from "../utils/createOutboxEvent.js";
+import { createOutboxEvent } from "../shared/utils/createOutboxEvent.js";
 import {
   calculateBillingBreakdown,
   getValidCoupon,
-} from "../utils/billingMath.js";
+} from "../shared/utils/billingMath.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-/* =========================
-   Helpers
-========================= */
 
 function getStudentName(user) {
   return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Student";
@@ -21,10 +17,6 @@ function getStudentName(user) {
 function getClassName(classItem) {
   return classItem?.title || classItem?.name || "GlowSuite Class";
 }
-
-/* =========================
-   Preview enrollment checkout
-========================= */
 
 export const previewEnrollmentCheckout = async (req, res) => {
   try {
@@ -66,10 +58,6 @@ export const previewEnrollmentCheckout = async (req, res) => {
   }
 };
 
-/* =========================
-   Create enrollment checkout
-========================= */
-
 export const createEnrollmentCheckout = async (req, res) => {
   try {
     const { classId, couponCode, state } = req.body;
@@ -85,9 +73,9 @@ export const createEnrollmentCheckout = async (req, res) => {
     }
 
     const existingEnrollment = await Enrollment.findOne({
-      user: req.user._id,
-      class: classId,
-      status: { $in: ["pending", "confirmed"] },
+      customer: req.user._id,
+      classItem: classItem._id,
+      status: { $in: ["pending", "paid"] },
     });
 
     if (existingEnrollment) {
@@ -112,11 +100,11 @@ export const createEnrollmentCheckout = async (req, res) => {
     });
 
     const enrollment = await Enrollment.create({
-      user: req.user._id,
-      class: classItem._id,
+      customer: req.user._id,
+      classItem: classItem._id,
       status: "pending",
       paymentStatus: "unpaid",
-      price: breakdown.total,
+      amount: breakdown.total,
     });
 
     const session = await stripe.checkout.sessions.create({
@@ -186,10 +174,6 @@ export const createEnrollmentCheckout = async (req, res) => {
   }
 };
 
-/* =========================
-   Mark enrollment paid after success
-========================= */
-
 export const markEnrollmentPaidAfterSuccess = async (req, res) => {
   try {
     const { session_id } = req.query;
@@ -223,15 +207,15 @@ export const markEnrollmentPaidAfterSuccess = async (req, res) => {
       billing.enrollment,
       {
         $set: {
-          status: "confirmed",
+          status: "paid",
           paymentStatus: "paid",
           paidAt: new Date(),
         },
       },
       { returnDocument: "after", runValidators: false },
     )
-      .populate("user")
-      .populate("class");
+      .populate("customer")
+      .populate("classItem");
 
     if (!enrollment) {
       return res.status(404).json({ message: "Enrollment not found" });
@@ -240,11 +224,11 @@ export const markEnrollmentPaidAfterSuccess = async (req, res) => {
     await createOutboxEvent({
       type: "CLASS_ENROLLMENT_EMAIL",
       payload: {
-        email: enrollment.user.email,
-        studentName: getStudentName(enrollment.user),
-        className: getClassName(enrollment.class),
-        date: enrollment.class.date,
-        time: enrollment.class.time,
+        email: enrollment.customer.email,
+        studentName: getStudentName(enrollment.customer),
+        className: getClassName(enrollment.classItem),
+        date: enrollment.classItem.date,
+        time: enrollment.classItem.time,
       },
     });
 
@@ -257,10 +241,6 @@ export const markEnrollmentPaidAfterSuccess = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-/* =========================
-   Direct enroll without Stripe
-========================= */
 
 export const enrollInClass = async (req, res) => {
   try {
@@ -277,9 +257,9 @@ export const enrollInClass = async (req, res) => {
     }
 
     const existingEnrollment = await Enrollment.findOne({
-      user: req.user._id,
-      class: classId,
-      status: { $in: ["pending", "confirmed"] },
+      customer: req.user._id,
+      classItem: classItem._id,
+      status: { $in: ["pending", "paid"] },
     });
 
     if (existingEnrollment) {
@@ -289,26 +269,25 @@ export const enrollInClass = async (req, res) => {
     }
 
     const enrollment = await Enrollment.create({
-      user: req.user._id,
-      class: classId,
-      status: "confirmed",
+      customer: req.user._id,
+      classItem: classItem._id,
+      status: "paid",
       paymentStatus: "paid",
-      price: Number(classItem.price || 0),
-      paidAt: new Date(),
+      amount: Number(classItem.price || 0),
     });
 
     const populatedEnrollment = await Enrollment.findById(enrollment._id)
-      .populate("user")
-      .populate("class");
+      .populate("customer")
+      .populate("classItem");
 
     await createOutboxEvent({
       type: "CLASS_ENROLLMENT_EMAIL",
       payload: {
-        email: populatedEnrollment.user.email,
-        studentName: getStudentName(populatedEnrollment.user),
-        className: getClassName(populatedEnrollment.class),
-        date: populatedEnrollment.class.date,
-        time: populatedEnrollment.class.time,
+        email: populatedEnrollment.customer.email,
+        studentName: getStudentName(populatedEnrollment.customer),
+        className: getClassName(populatedEnrollment.classItem),
+        date: populatedEnrollment.classItem.date,
+        time: populatedEnrollment.classItem.time,
       },
     });
 
@@ -322,14 +301,10 @@ export const enrollInClass = async (req, res) => {
   }
 };
 
-/* =========================
-   Get my enrollments
-========================= */
-
 export const getMyEnrollments = async (req, res) => {
   try {
-    const enrollments = await Enrollment.find({ user: req.user._id })
-      .populate("class")
+    const enrollments = await Enrollment.find({ customer: req.user._id })
+      .populate("classItem")
       .sort({ createdAt: -1 });
 
     return res.status(200).json(enrollments);

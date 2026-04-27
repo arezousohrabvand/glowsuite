@@ -6,8 +6,8 @@ import {
   getInstructorSchedule,
 } from "../controllers/instructorController.js";
 
-import { protect } from "../middleware/authMiddleware.js";
-import { authorizeRoles } from "../middleware/roleMiddleware.js";
+import { protect } from "../shared/middleware/authMiddleware.js";
+import { authorizeRoles } from "../shared/middleware/roleMiddleware.js";
 
 const router = express.Router();
 

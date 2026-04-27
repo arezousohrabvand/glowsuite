@@ -171,7 +171,7 @@ export default function AdminBookings() {
                         {canApprove && (
                           <button
                             onClick={() =>
-                              handleStatusChange(booking._id, "Upcoming")
+                              handleStatusChange(booking._id, "Confirmed")
                             }
                             disabled={isUpdating}
                             className="rounded bg-emerald-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"

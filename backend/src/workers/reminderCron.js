@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import Booking from "../models/Booking.js";
-import { createOutboxEvent } from "../utils/createOutboxEvent.js";
+import { createOutboxEvent } from "../shared/utils/createOutboxEvent.js";
 
 export const startReminderCron = () => {
   console.log("Reminder cron started");

@@ -1,9 +1,7 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT || 587),
-  secure: false,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -11,12 +9,19 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendEmail = async ({ to, subject, html }) => {
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  const info = await transporter.sendMail({
+    from: `"GlowSuite" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
   });
 
-  console.log("✅ Email sent to:", to);
+  console.log("📨 Email sent:", info.messageId);
+
+  return {
+    provider: "smtp",
+    messageId: info.messageId,
+    accepted: info.accepted,
+    rejected: info.rejected,
+  };
 };

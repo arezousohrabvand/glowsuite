@@ -119,6 +119,10 @@ export async function updateBookingStatus(req, res) {
   try {
     const { bookingId } = req.params;
     const { status } = req.body;
+    console.log("🔥 updateBookingStatus called", {
+      bookingId,
+      status,
+    });
 
     const allowedStatuses = [
       "Pending",
@@ -166,11 +170,17 @@ export async function updateBookingStatus(req, res) {
     await booking.save();
 
     if (status === "Confirmed" && currentStatus !== "Confirmed") {
+      console.log("✅ CONFIRMED EMAIL BLOCK HIT", {
+        bookingId: booking._id,
+        email: booking.user?.email,
+        currentStatus,
+        newStatus: status,
+      });
+
       await createOutboxEmail({
         type: "BOOKING_CONFIRMED_EMAIL",
-        recipientEmail: booking.user.email,
-        subject: "Your GlowSuite booking is confirmed",
         payload: {
+          email: booking.user.email,
           customerName: booking.user.firstName,
           serviceName: booking.serviceName || booking.service?.name,
           stylistName:
@@ -184,10 +194,9 @@ export async function updateBookingStatus(req, res) {
 
     if (status === "Cancelled" && currentStatus !== "Cancelled") {
       await createOutboxEmail({
-        type: "BOOKING_CANCELED_EMAIL",
-        recipientEmail: booking.user.email,
-        subject: "Your GlowSuite booking was canceled",
+        type: "BOOKING_CANCELLED_EMAIL",
         payload: {
+          email: booking.user.email,
           customerName: booking.user.firstName,
           serviceName: booking.serviceName || booking.service?.name,
           stylistName:

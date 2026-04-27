@@ -1,5 +1,5 @@
 import express from "express";
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../shared/middleware/authMiddleware.js";
 import {
   getMyBillingHistory,
   getAllBilling,

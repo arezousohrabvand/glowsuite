@@ -9,7 +9,7 @@ import {
   getAdminClassEnrollments,
 } from "../controllers/classController.js";
 
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../shared/middleware/authMiddleware.js";
 
 const router = express.Router();
 
