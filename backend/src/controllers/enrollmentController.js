@@ -1,546 +1,340 @@
-import mongoose from "mongoose";
 import Stripe from "stripe";
 import Enrollment from "../models/Enrollment.js";
-import ClassModel from "../models/Class.js";
+import Class from "../models/Class.js";
 import Billing from "../models/Billing.js";
-import ClassSeatHold from "../models/ClassSeatHold.js";
-import { emitClassSeatUpdate } from "../socket.js";
-import { createOutboxEmail } from "../services/outboxService.js";
-
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is missing in .env");
-}
+import { createOutboxEvent } from "../utils/createOutboxEvent.js";
+import {
+  calculateBillingBreakdown,
+  getValidCoupon,
+} from "../utils/billingMath.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const DEFAULT_TAX_RATE = 0.0825;
-const HOLD_MINUTES = 10;
 
-function buildSuccessUrl() {
-  return `${
-    process.env.CLIENT_URL || "http://localhost:5173"
-  }/payment-success?type=enrollment&session_id={CHECKOUT_SESSION_ID}`;
+/* =========================
+   Helpers
+========================= */
+
+function getStudentName(user) {
+  return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Student";
 }
 
-function buildCancelUrl() {
-  return `${process.env.CLIENT_URL || "http://localhost:5173"}/classes`;
+function getClassName(classItem) {
+  return classItem?.title || classItem?.name || "GlowSuite Class";
 }
 
-function calculateCheckoutAmounts({ subtotal, couponCode = "", state = "TX" }) {
-  const normalizedSubtotal = Number(subtotal || 0);
-
-  let discountAmount = 0;
-  if (couponCode === "SAVE10") {
-    discountAmount = normalizedSubtotal * 0.1;
-  }
-
-  const taxRate = state === "TX" ? DEFAULT_TAX_RATE : 0;
-  const taxableAmount = Math.max(normalizedSubtotal - discountAmount, 0);
-  const taxAmount = taxableAmount * taxRate;
-  const total = taxableAmount + taxAmount;
-
-  return {
-    subtotal: normalizedSubtotal,
-    discountAmount,
-    taxRate,
-    taxAmount,
-    total,
-  };
-}
-
-async function getLiveSeatState(classId) {
-  const classItem = await ClassModel.findById(classId);
-  if (!classItem) return null;
-
-  const activeHolds = await ClassSeatHold.countDocuments({
-    classItem: classId,
-    status: "active",
-    expiresAt: { $gt: new Date() },
-  });
-
-  const capacity = Number(classItem.capacity || 0);
-  const enrolledCount = Number(classItem.enrolledCount || 0);
-  const seatsLeft = Math.max(capacity - enrolledCount - activeHolds, 0);
-
-  return {
-    classId: String(classItem._id),
-    capacity,
-    enrolledCount,
-    activeHolds,
-    seatsLeft,
-  };
-}
-
-export const enrollInClass = async (req, res) => {
-  try {
-    const { classId } = req.body;
-
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    if (!classId) {
-      return res.status(400).json({ message: "Class ID is required" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(classId)) {
-      return res.status(400).json({ message: "Invalid class ID" });
-    }
-
-    const classItem = await ClassModel.findById(classId);
-
-    if (!classItem) {
-      return res.status(404).json({ message: "Class not found" });
-    }
-
-    if (classItem.isActive === false) {
-      return res.status(400).json({ message: "Class is not active" });
-    }
-
-    const activeHolds = await ClassSeatHold.countDocuments({
-      classItem: classId,
-      status: "active",
-      expiresAt: { $gt: new Date() },
-    });
-
-    const totalReserved = Number(classItem.enrolledCount || 0) + activeHolds;
-
-    if (totalReserved >= Number(classItem.capacity || 0)) {
-      return res.status(400).json({ message: "Class is full" });
-    }
-
-    const existing = await Enrollment.findOne({
-      customer: req.user._id,
-      classItem: classId,
-    }).populate("classItem");
-
-    if (existing) {
-      return res.status(200).json({
-        message: "Already enrolled in this class",
-        enrollment: existing,
-        alreadyEnrolled: true,
-      });
-    }
-
-    const price = Number(classItem.price || 0);
-    const title = classItem.title || "Class Enrollment";
-
-    const enrollment = await Enrollment.create({
-      customer: req.user._id,
-      classItem: classItem._id,
-      amount: price,
-      status: price > 0 ? "pending" : "paid",
-      paymentStatus: price > 0 ? "unpaid" : "paid",
-    });
-
-    if (price === 0) {
-      const updatedClass = await ClassModel.findOneAndUpdate(
-        {
-          _id: classItem._id,
-          $expr: { $lt: ["$enrolledCount", "$capacity"] },
-        },
-        {
-          $inc: { enrolledCount: 1 },
-        },
-        {
-          returnDocument: "after",
-        },
-      );
-
-      await Billing.create({
-        user: req.user._id,
-        type: "class",
-        enrollment: enrollment._id,
-        title,
-        description: `Free class enrollment for ${title}`,
-        amount: 0,
-        subtotal: 0,
-        taxAmount: 0,
-        discountAmount: 0,
-        total: 0,
-        currency: "usd",
-        state: "TX",
-        status: "paid",
-        paymentStatus: "paid",
-        stripeSessionId: "",
-        stripePaymentIntentId: "",
-        refundAmount: 0,
-        stripeRefundId: "",
-      });
-
-      const liveState = await getLiveSeatState(classItem._id);
-      if (liveState) emitClassSeatUpdate(classItem._id, liveState);
-
-      const populatedEnrollment = await Enrollment.findById(enrollment._id)
-        .populate("customer", "firstName email")
-        .populate("classItem");
-
-      await createOutboxEmail({
-        type: "CLASS_ENROLLED_EMAIL",
-        recipientEmail: populatedEnrollment.customer.email,
-        subject: "You are enrolled in your GlowSuite class",
-        payload: {
-          customerName: populatedEnrollment.customer.firstName,
-          className: populatedEnrollment.classItem.title,
-          instructorName:
-            populatedEnrollment.classItem.instructorName || "GlowSuite Team",
-          date: populatedEnrollment.classItem.date,
-          time: populatedEnrollment.classItem.time,
-        },
-      });
-
-      return res.status(201).json({
-        message: "Enrolled successfully",
-        enrollment: populatedEnrollment,
-        updatedClass,
-      });
-    }
-
-    const hold = await ClassSeatHold.create({
-      user: req.user._id,
-      classItem: classItem._id,
-      enrollment: enrollment._id,
-      expiresAt: new Date(Date.now() + HOLD_MINUTES * 60 * 1000),
-      status: "active",
-    });
-
-    const liveState = await getLiveSeatState(classItem._id);
-    if (liveState) emitClassSeatUpdate(classItem._id, liveState);
-
-    const populatedEnrollment = await Enrollment.findById(
-      enrollment._id,
-    ).populate("classItem");
-
-    return res.status(201).json({
-      message: "Enrollment created. Proceed to payment.",
-      enrollment: populatedEnrollment,
-      alreadyEnrolled: false,
-      holdId: hold._id,
-      holdExpiresAt: hold.expiresAt,
-    });
-  } catch (error) {
-    console.error("Enroll error:", error);
-    return res
-      .status(500)
-      .json({ message: error.message || "Enrollment failed" });
-  }
-};
-
-export const getMyEnrollments = async (req, res) => {
-  try {
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const enrollments = await Enrollment.find({ customer: req.user._id })
-      .populate("classItem")
-      .sort({ createdAt: -1 });
-
-    return res.json(enrollments);
-  } catch (error) {
-    console.error("Get enrollments error:", error);
-    return res.status(500).json({ message: error.message });
-  }
-};
+/* =========================
+   Preview enrollment checkout
+========================= */
 
 export const previewEnrollmentCheckout = async (req, res) => {
   try {
-    const { enrollmentId } = req.params;
-    const { couponCode = "", state = "TX" } = req.body;
+    const { classId, couponCode, state } = req.body;
 
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!classId) {
+      return res.status(400).json({ message: "classId is required" });
     }
 
-    const enrollment =
-      await Enrollment.findById(enrollmentId).populate("classItem");
-
-    if (!enrollment) {
-      return res.status(404).json({ message: "Enrollment not found" });
-    }
-
-    if (String(enrollment.customer) !== String(req.user._id)) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    const classItem = enrollment.classItem;
+    const classItem = await Class.findById(classId);
 
     if (!classItem) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    const { subtotal, discountAmount, taxRate, taxAmount, total } =
-      calculateCheckoutAmounts({
-        subtotal: classItem.price || enrollment.amount || 0,
-        couponCode,
-        state,
-      });
+    const subtotal = Number(classItem.price || 0);
 
-    const liveState = await getLiveSeatState(classItem._id);
-
-    return res.json({
-      title: classItem.title || "Class Enrollment",
+    const coupon = await getValidCoupon({
+      couponCode,
       type: "class",
       subtotal,
-      discountAmount,
-      taxAmount,
-      taxRate,
-      total,
-      taxState: state,
-      couponCode,
-      seatState: liveState,
+      state: state || "TX",
+    });
+
+    const breakdown = calculateBillingBreakdown({
+      subtotal,
+      state: state || "TX",
+      coupon,
+    });
+
+    return res.status(200).json({
+      classId: classItem._id,
+      className: getClassName(classItem),
+      breakdown,
     });
   } catch (error) {
-    console.error("Preview enrollment checkout error:", error);
+    console.error("previewEnrollmentCheckout error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   Create enrollment checkout
+========================= */
+
 export const createEnrollmentCheckout = async (req, res) => {
   try {
-    const { enrollmentId } = req.params;
-    const { couponCode = "", state = "TX" } = req.body;
+    const { classId, couponCode, state } = req.body;
 
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!classId) {
+      return res.status(400).json({ message: "classId is required" });
     }
 
-    const enrollment =
-      await Enrollment.findById(enrollmentId).populate("classItem");
-
-    if (!enrollment) {
-      return res.status(404).json({ message: "Enrollment not found" });
-    }
-
-    if (String(enrollment.customer) !== String(req.user._id)) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    const classItem = enrollment.classItem;
+    const classItem = await Class.findById(classId);
 
     if (!classItem) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    if (enrollment.paymentStatus === "paid") {
-      return res
-        .status(400)
-        .json({ message: "This enrollment is already paid" });
-    }
-
-    const hold = await ClassSeatHold.findOne({
-      enrollment: enrollment._id,
+    const existingEnrollment = await Enrollment.findOne({
       user: req.user._id,
-      status: "active",
-      expiresAt: { $gt: new Date() },
+      class: classId,
+      status: { $in: ["pending", "confirmed"] },
     });
 
-    if (!hold) {
+    if (existingEnrollment) {
       return res.status(409).json({
-        message: "Seat hold expired. Please enroll again.",
+        message: "You already have an enrollment for this class",
       });
     }
 
-    const { subtotal, discountAmount, taxRate, taxAmount, total } =
-      calculateCheckoutAmounts({
-        subtotal: classItem.price || enrollment.amount || 0,
-        couponCode,
-        state,
-      });
+    const subtotal = Number(classItem.price || 0);
+
+    const coupon = await getValidCoupon({
+      couponCode,
+      type: "class",
+      subtotal,
+      state: state || "TX",
+    });
+
+    const breakdown = calculateBillingBreakdown({
+      subtotal,
+      state: state || "TX",
+      coupon,
+    });
+
+    const enrollment = await Enrollment.create({
+      user: req.user._id,
+      class: classItem._id,
+      status: "pending",
+      paymentStatus: "unpaid",
+      price: breakdown.total,
+    });
 
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
       payment_method_types: ["card"],
-      customer_email: req.user.email ?? undefined,
-      success_url: buildSuccessUrl(),
-      cancel_url: buildCancelUrl(),
+      mode: "payment",
+      customer_email: req.user.email,
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: classItem.title || "Class Enrollment",
+              name: getClassName(classItem),
+              description: `Class enrollment for ${getClassName(classItem)}`,
             },
-            unit_amount: Math.round(total * 100),
+            unit_amount: Math.round(breakdown.total * 100),
           },
           quantity: 1,
         },
       ],
       metadata: {
-        type: "class",
-        userId: String(req.user._id),
-        enrollmentId: String(enrollment._id),
-        classId: String(classItem._id),
-        holdId: String(hold._id),
-        title: classItem.title || "Class Enrollment",
-        state,
-        couponCode,
-        subtotal: String(subtotal),
-        discountAmount: String(discountAmount),
-        taxRate: String(taxRate),
-        taxAmount: String(taxAmount),
-        total: String(total),
+        enrollmentId: enrollment._id.toString(),
+        userId: req.user._id.toString(),
+        classId: classItem._id.toString(),
+        className: getClassName(classItem),
+        couponCode: coupon?.code || "",
+        state: state || "TX",
+        checkoutType: "class_enrollment",
       },
+      success_url: `${process.env.CLIENT_URL}/payment-success?type=enrollment&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
     });
 
-    await Billing.findOneAndUpdate(
-      {
-        enrollment: enrollment._id,
-        paymentStatus: { $ne: "paid" },
-      },
-      {
-        user: req.user._id,
-        type: "class",
-        enrollment: enrollment._id,
-        title: classItem.title || "Class Enrollment",
-        description: `Class payment for ${
-          classItem.title || "Class Enrollment"
-        }`,
-        amount: total,
-        subtotal,
-        taxAmount,
-        discountAmount,
-        total,
-        couponCode: couponCode || null,
-        couponDiscountType: couponCode ? "percentage" : null,
-        couponDiscountValue: couponCode === "SAVE10" ? 10 : 0,
-        state,
-        currency: "usd",
-        status: "pending",
-        paymentStatus: "pending",
-        stripeSessionId: session.id,
-        stripePaymentIntentId: session.payment_intent || "",
-        refundAmount: 0,
-        stripeRefundId: "",
-      },
-      {
-        returnDocument: "after",
-        upsert: true,
-      },
-    );
+    await Billing.create({
+      user: req.user._id,
+      enrollment: enrollment._id,
+      class: classItem._id,
+      title: getClassName(classItem),
+      type: "class",
+      status: "pending",
+      paymentStatus: "pending",
+      stripeSessionId: session.id,
+      stripePaymentIntentId: session.payment_intent || null,
+      subtotal: breakdown.subtotal,
+      taxAmount: breakdown.taxAmount,
+      discountAmount: breakdown.discountAmount,
+      total: breakdown.total,
+      amount: breakdown.total,
+      couponCode: coupon?.code || null,
+      couponDiscountType: coupon?.discountType || null,
+      couponDiscountValue: coupon?.discountValue || 0,
+      state: state || "TX",
+      refundAmount: 0,
+      stripeRefundId: "",
+    });
+
+    enrollment.stripeSessionId = session.id;
+    await enrollment.save();
 
     return res.status(200).json({
       url: session.url,
-      sessionId: session.id,
-      holdExpiresAt: hold.expiresAt,
+      enrollmentId: enrollment._id,
+      breakdown,
     });
   } catch (error) {
-    console.error("Create enrollment checkout error:", error);
+    console.error("createEnrollmentCheckout error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
 
+/* =========================
+   Mark enrollment paid after success
+========================= */
+
 export const markEnrollmentPaidAfterSuccess = async (req, res) => {
   try {
-    const sessionId = req.query.sessionId || req.query.session_id;
+    const { session_id } = req.query;
 
-    if (!sessionId) {
-      return res.status(400).json({ message: "Session ID is required" });
+    if (!session_id) {
+      return res.status(400).json({ message: "session_id is required" });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const billing = await Billing.findOne({
+      stripeSessionId: session_id,
+      type: "class",
+    });
 
-    if (!session) {
-      return res.status(404).json({ message: "Stripe session not found" });
+    if (!billing) {
+      return res.status(404).json({ message: "Billing record not found" });
     }
 
-    if (session.payment_status !== "paid") {
-      return res.status(400).json({ message: "Payment not completed" });
+    if (billing.paymentStatus !== "paid") {
+      billing.status = "paid";
+      billing.paymentStatus = "paid";
+
+      if (!billing.stripePaymentIntentId) {
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+        billing.stripePaymentIntentId = session.payment_intent || "";
+      }
+
+      await billing.save();
     }
 
-    const enrollmentId = session.metadata?.enrollmentId;
-    const holdId = session.metadata?.holdId;
-
-    if (!enrollmentId) {
-      return res.status(400).json({ message: "Enrollment ID missing" });
-    }
-
-    const enrollment = await Enrollment.findById(enrollmentId);
+    const enrollment = await Enrollment.findByIdAndUpdate(
+      billing.enrollment,
+      {
+        $set: {
+          status: "confirmed",
+          paymentStatus: "paid",
+          paidAt: new Date(),
+        },
+      },
+      { returnDocument: "after", runValidators: false },
+    )
+      .populate("user")
+      .populate("class");
 
     if (!enrollment) {
       return res.status(404).json({ message: "Enrollment not found" });
     }
 
-    if (String(enrollment.customer) !== String(req.user._id)) {
-      return res.status(403).json({ message: "Forbidden" });
+    await createOutboxEvent({
+      type: "CLASS_ENROLLMENT_EMAIL",
+      payload: {
+        email: enrollment.user.email,
+        studentName: getStudentName(enrollment.user),
+        className: getClassName(enrollment.class),
+        date: enrollment.class.date,
+        time: enrollment.class.time,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Enrollment payment marked as paid and email queued",
+      enrollment,
+    });
+  } catch (error) {
+    console.error("markEnrollmentPaidAfterSuccess error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   Direct enroll without Stripe
+========================= */
+
+export const enrollInClass = async (req, res) => {
+  try {
+    const { classId } = req.body;
+
+    if (!classId) {
+      return res.status(400).json({ message: "classId is required" });
     }
 
-    if (enrollment.paymentStatus !== "paid") {
-      enrollment.paymentStatus = "paid";
-      enrollment.status = "paid";
-      enrollment.stripeSessionId = session.id;
-      await enrollment.save();
+    const classItem = await Class.findById(classId);
 
-      const updatedClass = await ClassModel.findOneAndUpdate(
-        {
-          _id: enrollment.classItem,
-          $expr: { $lt: ["$enrolledCount", "$capacity"] },
-        },
-        {
-          $inc: { enrolledCount: 1 },
-        },
-        {
-          returnDocument: "after",
-        },
-      );
+    if (!classItem) {
+      return res.status(404).json({ message: "Class not found" });
+    }
 
-      if (holdId) {
-        await ClassSeatHold.findByIdAndUpdate(
-          holdId,
-          {
-            $set: { status: "converted" },
-          },
-          { returnDocument: "after" },
-        );
-      }
+    const existingEnrollment = await Enrollment.findOne({
+      user: req.user._id,
+      class: classId,
+      status: { $in: ["pending", "confirmed"] },
+    });
 
-      await Billing.findOneAndUpdate(
-        { stripeSessionId: session.id },
-        {
-          status: "paid",
-          paymentStatus: "paid",
-          stripePaymentIntentId: session.payment_intent || "",
-        },
-        { returnDocument: "after" },
-      );
-
-      const liveState = await getLiveSeatState(enrollment.classItem);
-      if (liveState) emitClassSeatUpdate(enrollment.classItem, liveState);
-
-      const populatedEnrollment = await Enrollment.findById(enrollment._id)
-        .populate("customer", "firstName email")
-        .populate("classItem");
-
-      await createOutboxEmail({
-        type: "CLASS_ENROLLED_EMAIL",
-        recipientEmail: populatedEnrollment.customer.email,
-        subject: "You are enrolled in your GlowSuite class",
-        payload: {
-          customerName: populatedEnrollment.customer.firstName,
-          className: populatedEnrollment.classItem.title,
-          instructorName:
-            populatedEnrollment.classItem.instructorName || "GlowSuite Team",
-          date: populatedEnrollment.classItem.date,
-          time: populatedEnrollment.classItem.time,
-        },
-      });
-
-      return res.json({
-        message: "Enrollment payment confirmed",
-        enrollment: populatedEnrollment,
-        updatedClass,
+    if (existingEnrollment) {
+      return res.status(409).json({
+        message: "You already enrolled in this class",
       });
     }
 
-    const populatedEnrollment = await Enrollment.findById(enrollmentId)
-      .populate("customer", "firstName email")
-      .populate("classItem");
+    const enrollment = await Enrollment.create({
+      user: req.user._id,
+      class: classId,
+      status: "confirmed",
+      paymentStatus: "paid",
+      price: Number(classItem.price || 0),
+      paidAt: new Date(),
+    });
 
-    return res.json({
-      message: "Enrollment already marked as paid",
+    const populatedEnrollment = await Enrollment.findById(enrollment._id)
+      .populate("user")
+      .populate("class");
+
+    await createOutboxEvent({
+      type: "CLASS_ENROLLMENT_EMAIL",
+      payload: {
+        email: populatedEnrollment.user.email,
+        studentName: getStudentName(populatedEnrollment.user),
+        className: getClassName(populatedEnrollment.class),
+        date: populatedEnrollment.class.date,
+        time: populatedEnrollment.class.time,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Class enrollment created and email queued",
       enrollment: populatedEnrollment,
     });
   } catch (error) {
-    console.error("Payment success error:", error);
+    console.error("enrollInClass error:", error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   Get my enrollments
+========================= */
+
+export const getMyEnrollments = async (req, res) => {
+  try {
+    const enrollments = await Enrollment.find({ user: req.user._id })
+      .populate("class")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(enrollments);
+  } catch (error) {
+    console.error("getMyEnrollments error:", error);
     return res.status(500).json({ message: error.message });
   }
 };

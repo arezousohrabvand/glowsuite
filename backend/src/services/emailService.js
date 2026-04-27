@@ -11,7 +11,11 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendEmail = async ({ to, subject, html }) => {
-  await transporter.sendMail({
+  if (!to || !subject || !html) {
+    throw new Error("Email requires to, subject, and html");
+  }
+
+  return await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to,
     subject,

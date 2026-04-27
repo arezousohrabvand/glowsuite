@@ -6,10 +6,12 @@ import { Server } from "socket.io";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import { setIo } from "./socket.js";
+
 import ClassSeatHold from "./models/ClassSeatHold.js";
 import ClassModel from "./models/Class.js";
-import { startEmailWorker } from "./jobs/emailCron.js";
-import { startReminderJob } from "./jobs/reminderJob.js";
+
+import { startEmailWorker } from "./workers/emailWorker.js";
+import { startReminderCron } from "./workers/reminderCron.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -45,7 +47,6 @@ io.on("connection", (socket) => {
 });
 
 async function expireClassSeatHolds() {
-  // ✅ Important: skip if Mongo is disconnected
   if (mongoose.connection.readyState !== 1) {
     console.log("Mongo not ready, skipping expireClassSeatHolds");
     return;
@@ -83,7 +84,6 @@ let isExpiringClassSeatHolds = false;
 
 function startClassSeatHoldInterval() {
   setInterval(async () => {
-    // ✅ Prevent job from running again while previous one is still running
     if (isExpiringClassSeatHolds) return;
 
     try {
@@ -103,8 +103,9 @@ async function startServer() {
   try {
     await connectDB();
 
-    // ✅ Start background job AFTER database connects
     startClassSeatHoldInterval();
+    startEmailWorker();
+    startReminderCron();
 
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
@@ -124,5 +125,3 @@ async function startServer() {
 }
 
 startServer();
-startEmailWorker();
-startReminderJob();

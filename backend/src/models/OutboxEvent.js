@@ -4,23 +4,13 @@ const outboxEventSchema = new mongoose.Schema(
   {
     type: {
       type: String,
+      required: true,
       enum: [
         "BOOKING_CONFIRMED_EMAIL",
-        "BOOKING_CANCELED_EMAIL",
-        "CLASS_ENROLLED_EMAIL",
+        "BOOKING_CANCELLED_EMAIL",
+        "CLASS_ENROLLMENT_EMAIL",
         "BOOKING_REMINDER_EMAIL",
       ],
-      required: true,
-    },
-
-    recipientEmail: {
-      type: String,
-      required: true,
-    },
-
-    subject: {
-      type: String,
-      required: true,
     },
 
     payload: {
@@ -30,7 +20,7 @@ const outboxEventSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "processing", "sent", "failed"],
+      enum: ["pending", "processing", "processed", "failed"],
       default: "pending",
     },
 
@@ -39,18 +29,24 @@ const outboxEventSchema = new mongoose.Schema(
       default: 0,
     },
 
-    lastError: String,
-
-    scheduledFor: {
-      type: Date,
-      default: Date.now,
+    maxAttempts: {
+      type: Number,
+      default: 5,
     },
 
-    sentAt: Date,
+    lastError: {
+      type: String,
+      default: null,
+    },
+
+    processedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );
 
-outboxEventSchema.index({ status: 1, scheduledFor: 1 });
+outboxEventSchema.index({ status: 1, createdAt: 1 });
 
 export default mongoose.model("OutboxEvent", outboxEventSchema);

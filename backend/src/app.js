@@ -26,7 +26,7 @@ app.use(
   }),
 );
 
-// Stripe webhook must come before express.json()
+// Stripe webhook BEFORE json
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
@@ -36,16 +36,20 @@ app.post(
 // normal middleware
 app.use(express.json());
 
-// health route
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK" });
+// ✅ HEALTH ROUTES (PUT HERE — BEFORE ROUTES OR ERROR HANDLER)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "GlowSuite API is running",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.get("/", (req, res) => {
   res.send("GlowSuite API is running...");
 });
 
-// mount all routes
+// routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
@@ -59,7 +63,7 @@ app.use("/api/stripe", stripeRoutes);
 app.use("/api/stylist", stylistRoutes);
 app.use("/api/instructor", instructorRoutes);
 
-// error handling
+// ❌ THESE MUST BE LAST
 app.use(notFound);
 app.use(errorHandler);
 

@@ -8,6 +8,7 @@ import {
   calculateBillingBreakdown,
   getValidCoupon,
 } from "../utils/billingMath.js";
+import { createOutboxEvent } from "../utils/createOutboxEvent.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -85,6 +86,20 @@ async function findStylistUserByName(stylistName) {
       },
     },
   });
+}
+
+function getCustomerName(user) {
+  return (
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+    "GlowSuite customer"
+  );
+}
+
+function getStylistName(booking) {
+  return (
+    booking.stylistName ||
+    `${booking.stylist?.firstName || ""} ${booking.stylist?.lastName || ""}`.trim()
+  );
 }
 
 /* =========================
@@ -536,14 +551,14 @@ export const markBookingPaidAfterSuccess = async (req, res) => {
 };
 
 /* =========================
-   Cancel booking - no auto refund
+   Customer cancel booking
 ========================= */
 
 export const cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate("service");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -576,7 +591,7 @@ export const cancelBooking = async (req, res) => {
         },
       },
       { returnDocument: "after", runValidators: false },
-    );
+    ).populate("service");
 
     await SlotHold.updateMany(
       {
@@ -589,11 +604,23 @@ export const cancelBooking = async (req, res) => {
       { $set: { status: "released" } },
     );
 
+    await createOutboxEvent({
+      type: "BOOKING_CANCELLED_EMAIL",
+      payload: {
+        email: req.user.email,
+        customerName: getCustomerName(req.user),
+        serviceName: booking.serviceName || booking.service?.name,
+        stylistName: booking.stylistName,
+        date: booking.date,
+        time: booking.time,
+      },
+    });
+
     return res.status(200).json({
       message:
         booking.paymentStatus === "paid"
-          ? "Booking cancelled. Refund must be handled by admin."
-          : "Booking cancelled successfully.",
+          ? "Booking cancelled. Refund must be handled by admin. Cancellation email queued."
+          : "Booking cancelled successfully. Cancellation email queued.",
       booking: updatedBooking,
       refunded: false,
     });
@@ -606,7 +633,7 @@ export const cancelBooking = async (req, res) => {
 };
 
 /* =========================
-   Admin: update booking status
+   Admin: confirm / cancel booking
 ========================= */
 
 export const updateBookingStatusByAdmin = async (req, res) => {
@@ -614,19 +641,28 @@ export const updateBookingStatusByAdmin = async (req, res) => {
     const { bookingId } = req.params;
     const { status } = req.body;
 
-    const allowedStatuses = ["Upcoming", "Cancelled"];
+    const allowedStatuses = [
+      "Pending",
+      "Upcoming",
+      "Confirmed",
+      "Cancelled",
+      "Completed",
+    ];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status update" });
     }
 
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId)
+      .populate("user")
+      .populate("service")
+      .populate("stylist");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    if (booking.status === "Completed") {
+    if (booking.status === "Completed" && status !== "Completed") {
       return res.status(400).json({
         message: "Completed booking cannot be changed",
       });
@@ -641,11 +677,41 @@ export const updateBookingStatusByAdmin = async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    if (status === "Confirmed" || status === "Upcoming") {
+      await createOutboxEvent({
+        type: "BOOKING_CONFIRMED_EMAIL",
+        payload: {
+          email: booking.user.email,
+          customerName: getCustomerName(booking.user),
+          serviceName: booking.serviceName || booking.service?.name,
+          stylistName: getStylistName(booking),
+          date: booking.date,
+          time: booking.time,
+        },
+      });
+    }
+
+    if (status === "Cancelled") {
+      await createOutboxEvent({
+        type: "BOOKING_CANCELLED_EMAIL",
+        payload: {
+          email: booking.user.email,
+          customerName: getCustomerName(booking.user),
+          serviceName: booking.serviceName || booking.service?.name,
+          stylistName: getStylistName(booking),
+          date: booking.date,
+          time: booking.time,
+        },
+      });
+    }
+
     return res.status(200).json({
       message:
-        status === "Upcoming"
-          ? "Booking approved successfully"
-          : "Booking cancelled successfully. Refund must be handled separately.",
+        status === "Confirmed" || status === "Upcoming"
+          ? "Booking confirmed and email queued."
+          : status === "Cancelled"
+            ? "Booking cancelled and email queued. Refund must be handled separately."
+            : "Booking status updated successfully.",
       booking,
     });
   } catch (error) {

@@ -14,7 +14,7 @@ router.post("/", protect, enrollInClass);
 router.get("/my-enrollments", protect, getMyEnrollments);
 router.get("/payment-success", protect, markEnrollmentPaidAfterSuccess);
 
-router.post("/:enrollmentId/preview", protect, previewEnrollmentCheckout);
-router.post("/:enrollmentId/checkout", protect, createEnrollmentCheckout);
+router.post("/preview", protect, previewEnrollmentCheckout);
+router.post("/checkout", protect, createEnrollmentCheckout);
 
 export default router;

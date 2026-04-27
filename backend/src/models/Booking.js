@@ -105,6 +105,10 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+    reminderEmailSent: {
+      type: Boolean,
+      default: false,
+    },
 
     holdId: {
       type: String,
