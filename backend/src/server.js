@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { Server } from "socket.io";
 
 import app from "./app.js";
-import connectDB from "./config/db.js";
+import connectDB from "./shared/config/db.js";
 import { setIo } from "./socket.js";
 
 import ClassSeatHold from "./models/ClassSeatHold.js";

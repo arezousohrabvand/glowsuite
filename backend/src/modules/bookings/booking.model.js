@@ -105,6 +105,7 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+
     reminderEmailSent: {
       type: Boolean,
       default: false,
@@ -122,6 +123,7 @@ const bookingSchema = new mongoose.Schema(
   },
 );
 
+// Prevent double booking (active states only)
 bookingSchema.index(
   { stylist: 1, slotStart: 1 },
   {
@@ -132,6 +134,7 @@ bookingSchema.index(
   },
 );
 
+// Query performance indexes
 bookingSchema.index({ user: 1, createdAt: -1 });
 bookingSchema.index({ stylist: 1, date: 1 });
 bookingSchema.index({ status: 1, paymentStatus: 1 });
@@ -141,6 +144,7 @@ bookingSchema.index({ stylist: 1, paymentStatus: 1, slotStart: 1 });
 bookingSchema.index({ user: 1, slotStart: -1 });
 bookingSchema.index({ slotStart: 1, slotEnd: 1 });
 
+// 🔥 SAFE MODEL (prevents OverwriteModelError)
 const Booking =
   mongoose.models.Booking || mongoose.model("Booking", bookingSchema);
 

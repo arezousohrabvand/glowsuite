@@ -3,7 +3,7 @@ import cors from "cors";
 
 import classRoutes from "./routes/classRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import bookingRoutes from "./routes/bookingRoutes.js";
+import bookingRoutes from "./modules/bookings/booking.routes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
