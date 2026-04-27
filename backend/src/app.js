@@ -15,10 +15,13 @@ import stylistRoutes from "./routes/stylistRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
 
 import { stripeWebhookHandler } from "./controllers/paymentController.js";
-import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+
+// ✅ FIXED: correct shared middleware import
+import { notFound, errorHandler } from "./shared/middleware/errorMiddleware.js";
 
 const app = express();
 
+// CORS
 app.use(
   cors({
     origin: ["http://localhost:5173", process.env.CLIENT_URL].filter(Boolean),
@@ -26,17 +29,17 @@ app.use(
   }),
 );
 
-// Stripe webhook BEFORE json
+// ✅ Stripe webhook BEFORE json middleware
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
   stripeWebhookHandler,
 );
 
-// normal middleware
+// Normal middleware
 app.use(express.json());
 
-// ✅ HEALTH ROUTES (PUT HERE — BEFORE ROUTES OR ERROR HANDLER)
+// ✅ Health routes
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -49,7 +52,7 @@ app.get("/", (req, res) => {
   res.send("GlowSuite API is running...");
 });
 
-// routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
@@ -63,7 +66,7 @@ app.use("/api/stripe", stripeRoutes);
 app.use("/api/stylist", stylistRoutes);
 app.use("/api/instructor", instructorRoutes);
 
-// ❌ THESE MUST BE LAST
+// ❌ MUST be last
 app.use(notFound);
 app.use(errorHandler);
 

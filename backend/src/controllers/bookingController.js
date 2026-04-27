@@ -7,8 +7,8 @@ import User from "../models/User.js";
 import {
   calculateBillingBreakdown,
   getValidCoupon,
-} from "../utils/billingMath.js";
-import { createOutboxEvent } from "../utils/createOutboxEvent.js";
+} from "../shared/utils/billingMath.js";
+import { createOutboxEvent } from "../shared/utils/createOutboxEvent.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
