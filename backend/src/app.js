@@ -1,16 +1,18 @@
 import express from "express";
 import cors from "cors";
 
+import classRoutes from "./routes/classRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
-import classRoutes from "./routes/classRoutes.js";
 import seedRoutes from "./routes/seedRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import stripeRoutes from "./routes/stripeRoutes.js";
+import stylistRoutes from "./routes/stylistRoutes.js";
+import instructorRoutes from "./routes/instructorRoutes.js";
 
 import { stripeWebhookHandler } from "./controllers/paymentController.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -54,6 +56,8 @@ app.use("/api/seed", seedRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/stripe", stripeRoutes);
+app.use("/api/stylist", stylistRoutes);
+app.use("/api/instructor", instructorRoutes);
 
 // error handling
 app.use(notFound);

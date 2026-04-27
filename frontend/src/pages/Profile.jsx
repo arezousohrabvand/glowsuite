@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, UserRound, Mail, Phone } from "lucide-react";
 import { getMyProfile, updateMyProfile } from "../api/profileApi";
 
@@ -25,7 +26,6 @@ function FloatingInput({
   onChange,
   error,
   icon,
-  placeholder = " ",
 }) {
   return (
     <div>
@@ -40,7 +40,7 @@ function FloatingInput({
           type={type}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
+          placeholder=" "
           className={`peer w-full rounded-xl border bg-white px-10 pb-2 pt-6 text-sm text-zinc-900 outline-none transition ${
             error
               ? "border-rose-300 ring-1 ring-rose-100 focus:border-rose-400"
@@ -69,6 +69,7 @@ export default function Profile() {
     lastName: "",
     phone: "",
     email: "",
+    role: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -76,6 +77,8 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [pageError, setPageError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const isCustomer = profile.role === "customer";
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -90,6 +93,7 @@ export default function Profile() {
           lastName: data.lastName || "",
           phone: data.phone || "",
           email: data.email || "",
+          role: data.role || "",
         });
       } catch (error) {
         console.error("Failed to load profile:", error);
@@ -117,26 +121,22 @@ export default function Profile() {
         if (!value.trim()) return "First name is required";
         if (value.trim().length < 2) return "First name is too short";
         return "";
-
       case "lastName":
         if (!value.trim()) return "Last name is required";
         if (value.trim().length < 2) return "Last name is too short";
         return "";
-
       case "phone":
-        if (!value.trim()) return "Phone number is required";
+        if (!value.trim()) return "";
         if (!/^[0-9+\-\s()]{7,20}$/.test(value.trim())) {
           return "Enter a valid phone number";
         }
         return "";
-
       case "email":
         if (!value.trim()) return "Email is required";
         if (!/^\S+@\S+\.\S+$/i.test(value.trim())) {
           return "Enter a valid email";
         }
         return "";
-
       default:
         return "";
     }
@@ -170,6 +170,23 @@ export default function Profile() {
     setSaved(false);
   };
 
+  const syncLocalStorageUser = (updated) => {
+    const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        ...savedUser,
+        firstName: updated.firstName || "",
+        lastName: updated.lastName || "",
+        phone: updated.phone || "",
+        email: updated.email || "",
+        role: updated.role || savedUser.role || profile.role,
+        fullName: `${updated.firstName || ""} ${updated.lastName || ""}`.trim(),
+      }),
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -181,19 +198,21 @@ export default function Profile() {
 
       const updated = await updateMyProfile(profile);
 
-      setProfile({
+      const nextProfile = {
         firstName: updated.firstName || "",
         lastName: updated.lastName || "",
         phone: updated.phone || "",
         email: updated.email || "",
-      });
+        role: updated.role || profile.role || "",
+      };
+
+      setProfile(nextProfile);
+      syncLocalStorageUser(nextProfile);
 
       setSaved(true);
       toast.success(updated.message || "Profile updated successfully");
 
-      setTimeout(() => {
-        setSaved(false);
-      }, 2500);
+      setTimeout(() => setSaved(false), 2500);
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error(error.response?.data?.message || "Failed to update profile");
@@ -204,36 +223,17 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-white px-6 py-12">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 h-10 w-48 rounded bg-zinc-100" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-96 rounded-2xl bg-white shadow-sm ring-1 ring-zinc-100" />
-            <div className="h-96 rounded-2xl bg-white shadow-sm ring-1 ring-zinc-100" />
-          </div>
-        </div>
-      </div>
+      <div className="min-h-screen bg-rose-50 p-12">Loading profile...</div>
     );
   }
 
   if (pageError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-white px-6 py-12">
-        <div className="mx-auto max-w-5xl">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
-            {pageError}
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="p-6 text-red-600">{pageError}</div>;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-white text-zinc-900">
       <section className="relative overflow-hidden border-b border-rose-100">
-        <div className="absolute -left-16 top-10 h-52 w-52 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-fuchsia-200/30 blur-3xl" />
-
         <div className="mx-auto max-w-6xl px-6 py-14 md:px-10 lg:px-12">
           <div className="mb-8 flex flex-wrap gap-3">
             <Link
@@ -243,30 +243,35 @@ export default function Profile() {
               ← Dashboard
             </Link>
 
-            <Link
-              to="/booking"
-              className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-600"
-            >
-              Book New Appointment
-            </Link>
+            {isCustomer && (
+              <Link
+                to="/booking"
+                className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-600"
+              >
+                Book New Appointment
+              </Link>
+            )}
           </div>
 
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-rose-500">
-            Client Profile Center
+            Profile Center
           </p>
+
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
             My Profile
           </h1>
+
           <p className="mt-4 max-w-2xl text-zinc-600">
             View your personal details, update your account information, and
             keep your GlowSuite profile current.
           </p>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
+          <div className="mt-10 grid gap-4 md:grid-cols-5">
             <StatCard label="First Name" value={profile.firstName} />
             <StatCard label="Last Name" value={profile.lastName} />
             <StatCard label="Phone" value={profile.phone} />
             <StatCard label="Email" value={profile.email} />
+            <StatCard label="Role" value={profile.role} />
           </div>
         </div>
       </section>
@@ -281,51 +286,13 @@ export default function Profile() {
 
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-500">
-                  Client Account
+                  {profile.role || "Account"}
                 </p>
                 <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
                   {fullName}
                 </h2>
                 <p className="mt-1 break-all text-sm text-zinc-500">
                   {profile.email || "No email provided"}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                  First Name
-                </p>
-                <p className="mt-1 text-sm font-semibold text-zinc-900">
-                  {profile.firstName || "Not provided"}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                  Last Name
-                </p>
-                <p className="mt-1 text-sm font-semibold text-zinc-900">
-                  {profile.lastName || "Not provided"}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                  Phone Number
-                </p>
-                <p className="mt-1 text-sm font-semibold text-zinc-900">
-                  {profile.phone || "Not provided"}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-                  Email Address
-                </p>
-                <p className="mt-1 break-all text-sm font-semibold text-zinc-900">
-                  {profile.email || "Not provided"}
                 </p>
               </div>
             </div>
@@ -340,10 +307,6 @@ export default function Profile() {
                 <h2 className="mt-2 text-2xl font-bold text-zinc-900">
                   Update Personal Information
                 </h2>
-                <p className="mt-2 text-zinc-600">
-                  Keep your account details accurate for bookings, updates, and
-                  communication.
-                </p>
               </div>
 
               <AnimatePresence>

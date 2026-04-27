@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Class from "../models/Class.js";
 import Enrollment from "../models/Enrollment.js";
 import Billing from "../models/Billing.js";
+import { createOutboxEmail } from "../services/outboxService.js";
 
 export async function getAdminStats(req, res) {
   try {
@@ -131,7 +132,11 @@ export async function updateBookingStatus(req, res) {
       return res.status(400).json({ message: "Invalid booking status" });
     }
 
-    const booking = await Booking.findById(bookingId).select("status");
+    const booking = await Booking.findById(bookingId)
+      .populate("user", "firstName lastName email")
+      .populate("stylist", "firstName lastName email")
+      .populate("service", "name price duration category");
+
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
@@ -157,25 +162,57 @@ export async function updateBookingStatus(req, res) {
       });
     }
 
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      bookingId,
-      { $set: { status } },
-      { new: true },
-    )
-      .populate("user", "firstName lastName email")
-      .populate("stylist", "firstName lastName email")
-      .populate("service", "name price duration category");
+    booking.status = status;
+    await booking.save();
+
+    if (status === "Confirmed" && currentStatus !== "Confirmed") {
+      await createOutboxEmail({
+        type: "BOOKING_CONFIRMED_EMAIL",
+        recipientEmail: booking.user.email,
+        subject: "Your GlowSuite booking is confirmed",
+        payload: {
+          customerName: booking.user.firstName,
+          serviceName: booking.serviceName || booking.service?.name,
+          stylistName:
+            booking.stylistName ||
+            `${booking.stylist?.firstName || ""} ${booking.stylist?.lastName || ""}`.trim(),
+          date: booking.date,
+          time: booking.time,
+        },
+      });
+    }
+
+    if (status === "Cancelled" && currentStatus !== "Cancelled") {
+      await createOutboxEmail({
+        type: "BOOKING_CANCELED_EMAIL",
+        recipientEmail: booking.user.email,
+        subject: "Your GlowSuite booking was canceled",
+        payload: {
+          customerName: booking.user.firstName,
+          serviceName: booking.serviceName || booking.service?.name,
+          stylistName:
+            booking.stylistName ||
+            `${booking.stylist?.firstName || ""} ${booking.stylist?.lastName || ""}`.trim(),
+          date: booking.date,
+          time: booking.time,
+        },
+      });
+    }
 
     return res.json({
-      message: `Booking updated to ${status}`,
-      booking: updatedBooking,
+      message:
+        status === "Confirmed"
+          ? "Booking confirmed and email queued"
+          : status === "Cancelled"
+            ? "Booking cancelled and email queued"
+            : `Booking updated to ${status}`,
+      booking,
     });
   } catch (error) {
     console.error("updateBookingStatus error:", error);
     return res.status(500).json({ message: "Failed to update booking status" });
   }
 }
-
 // =========================
 // SERVICES
 // =========================

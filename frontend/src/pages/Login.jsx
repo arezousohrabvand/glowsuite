@@ -16,6 +16,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const getRedirectPath = (role) => {
+    if (role === "admin") return "/admin";
+    if (role === "stylist") return "/stylist";
+    if (role === "instructor") return "/instructor";
+    return "/dashboard";
+  };
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -39,15 +46,22 @@ export default function Login() {
       );
 
       const data = res.data;
-
       const token = data.token || data.accessToken || "";
-      const role = data.role || data.user?.role || "customer";
+      const user = data.user || data;
+      const role = user?.role || data.role || "customer";
+
+      if (!token) {
+        throw new Error("Login response is missing token");
+      }
 
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Optional: keep backward compatibility if old code still reads userInfo
       localStorage.setItem(
         "userInfo",
         JSON.stringify({
-          ...data,
+          ...user,
           role,
           token,
         }),
@@ -55,19 +69,18 @@ export default function Login() {
 
       if (saveAuth) {
         saveAuth({
-          ...data,
-          role,
+          user,
           token,
+          role,
         });
       }
 
       const redirectTo =
-        location.state?.from?.pathname ||
-        (role === "admin" ? "/admin" : "/dashboard");
+        location.state?.from?.pathname || getRedirectPath(role);
 
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || err.message || "Login failed");
     } finally {
       setLoading(false);
     }

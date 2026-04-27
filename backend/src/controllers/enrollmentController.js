@@ -5,6 +5,7 @@ import ClassModel from "../models/Class.js";
 import Billing from "../models/Billing.js";
 import ClassSeatHold from "../models/ClassSeatHold.js";
 import { emitClassSeatUpdate } from "../socket.js";
+import { createOutboxEmail } from "../services/outboxService.js";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is missing in .env");
@@ -69,7 +70,6 @@ async function getLiveSeatState(classId) {
   };
 }
 
-// POST /api/enrollments
 export const enrollInClass = async (req, res) => {
   try {
     const { classId } = req.body;
@@ -102,9 +102,9 @@ export const enrollInClass = async (req, res) => {
       expiresAt: { $gt: new Date() },
     });
 
-    const totalReserved = (classItem.enrolledCount || 0) + activeHolds;
+    const totalReserved = Number(classItem.enrolledCount || 0) + activeHolds;
 
-    if (totalReserved >= (classItem.capacity || 0)) {
+    if (totalReserved >= Number(classItem.capacity || 0)) {
       return res.status(400).json({ message: "Class is full" });
     }
 
@@ -170,9 +170,23 @@ export const enrollInClass = async (req, res) => {
       const liveState = await getLiveSeatState(classItem._id);
       if (liveState) emitClassSeatUpdate(classItem._id, liveState);
 
-      const populatedEnrollment = await Enrollment.findById(
-        enrollment._id,
-      ).populate("classItem");
+      const populatedEnrollment = await Enrollment.findById(enrollment._id)
+        .populate("customer", "firstName email")
+        .populate("classItem");
+
+      await createOutboxEmail({
+        type: "CLASS_ENROLLED_EMAIL",
+        recipientEmail: populatedEnrollment.customer.email,
+        subject: "You are enrolled in your GlowSuite class",
+        payload: {
+          customerName: populatedEnrollment.customer.firstName,
+          className: populatedEnrollment.classItem.title,
+          instructorName:
+            populatedEnrollment.classItem.instructorName || "GlowSuite Team",
+          date: populatedEnrollment.classItem.date,
+          time: populatedEnrollment.classItem.time,
+        },
+      });
 
       return res.status(201).json({
         message: "Enrolled successfully",
@@ -378,7 +392,9 @@ export const createEnrollmentCheckout = async (req, res) => {
         type: "class",
         enrollment: enrollment._id,
         title: classItem.title || "Class Enrollment",
-        description: `Class payment for ${classItem.title || "Class Enrollment"}`,
+        description: `Class payment for ${
+          classItem.title || "Class Enrollment"
+        }`,
         amount: total,
         subtotal,
         taxAmount,
@@ -490,8 +506,23 @@ export const markEnrollmentPaidAfterSuccess = async (req, res) => {
       const liveState = await getLiveSeatState(enrollment.classItem);
       if (liveState) emitClassSeatUpdate(enrollment.classItem, liveState);
 
-      const populatedEnrollment =
-        await Enrollment.findById(enrollmentId).populate("classItem");
+      const populatedEnrollment = await Enrollment.findById(enrollment._id)
+        .populate("customer", "firstName email")
+        .populate("classItem");
+
+      await createOutboxEmail({
+        type: "CLASS_ENROLLED_EMAIL",
+        recipientEmail: populatedEnrollment.customer.email,
+        subject: "You are enrolled in your GlowSuite class",
+        payload: {
+          customerName: populatedEnrollment.customer.firstName,
+          className: populatedEnrollment.classItem.title,
+          instructorName:
+            populatedEnrollment.classItem.instructorName || "GlowSuite Team",
+          date: populatedEnrollment.classItem.date,
+          time: populatedEnrollment.classItem.time,
+        },
+      });
 
       return res.json({
         message: "Enrollment payment confirmed",
@@ -500,8 +531,9 @@ export const markEnrollmentPaidAfterSuccess = async (req, res) => {
       });
     }
 
-    const populatedEnrollment =
-      await Enrollment.findById(enrollmentId).populate("classItem");
+    const populatedEnrollment = await Enrollment.findById(enrollmentId)
+      .populate("customer", "firstName email")
+      .populate("classItem");
 
     return res.json({
       message: "Enrollment already marked as paid",

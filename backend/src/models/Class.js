@@ -21,6 +21,11 @@ const classSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    instructor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     price: {
       type: Number,
       default: 0,

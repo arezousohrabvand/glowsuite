@@ -8,6 +8,8 @@ import connectDB from "./config/db.js";
 import { setIo } from "./socket.js";
 import ClassSeatHold from "./models/ClassSeatHold.js";
 import ClassModel from "./models/Class.js";
+import { startEmailWorker } from "./jobs/emailCron.js";
+import { startReminderJob } from "./jobs/reminderJob.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -122,3 +124,5 @@ async function startServer() {
 }
 
 startServer();
+startEmailWorker();
+startReminderJob();

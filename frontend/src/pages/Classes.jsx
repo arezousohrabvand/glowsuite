@@ -107,7 +107,10 @@ export default function Classes() {
 
     const title = String(item.title || "").toLowerCase();
     const instructor = String(
-      item.instructorName || item.instructor || "",
+      item.instructorName ||
+        item.instructor?.fullName ||
+        `${item.instructor?.firstName || ""} ${item.instructor?.lastName || ""}` ||
+        "",
     ).toLowerCase();
     const categoryText = String(item.category || "").toLowerCase();
     const levelText = String(item.level || "");
@@ -249,7 +252,10 @@ export default function Classes() {
                   <h3 className="mt-4 text-xl font-bold">{item.title}</h3>
 
                   <p className="text-sm text-zinc-600">
-                    {item.instructorName || item.instructor}
+                    {item.instructorName ||
+                      item.instructor?.fullName ||
+                      `${item.instructor?.firstName || ""} ${item.instructor?.lastName || ""}`.trim() ||
+                      "GlowSuite Instructor"}
                   </p>
 
                   <div className="mt-3 flex flex-wrap gap-2">

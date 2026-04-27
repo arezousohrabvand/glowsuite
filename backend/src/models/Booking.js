@@ -66,6 +66,13 @@ const bookingSchema = new mongoose.Schema(
       maxlength: 1000,
     },
 
+    stylistNotes: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 1000,
+    },
+
     price: {
       type: Number,
       required: true,
@@ -124,6 +131,11 @@ bookingSchema.index(
 bookingSchema.index({ user: 1, createdAt: -1 });
 bookingSchema.index({ stylist: 1, date: 1 });
 bookingSchema.index({ status: 1, paymentStatus: 1 });
+bookingSchema.index({ stylist: 1, slotStart: 1, slotEnd: 1 });
+bookingSchema.index({ stylist: 1, status: 1, slotStart: 1 });
+bookingSchema.index({ stylist: 1, paymentStatus: 1, slotStart: 1 });
+bookingSchema.index({ user: 1, slotStart: -1 });
+bookingSchema.index({ slotStart: 1, slotEnd: 1 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
 

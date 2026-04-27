@@ -13,6 +13,11 @@ import EnrollmentPayment from "../pages/EnrollmentPayment";
 import AdminRevenue from "../pages/admin/AdminRevenue";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminEnrollments from "../pages/admin/AdminEnrollments";
+import StylistDashboard from "../pages/stylist/StylistDashboard";
+import StylistBookings from "../pages/stylist/StylistBookings";
+import Profile from "../pages/Profile";
+import InstructorDashboard from "../pages/instructor/InstructorDashboard";
+import InstructorClasses from "../pages/instructor/InstructorClasses";
 
 // Lazy pages
 const Landing = lazy(() => import("../pages/Landing"));
@@ -28,7 +33,7 @@ const Classes = lazy(() => import("../pages/Classes"));
 const ClassDetails = lazy(() => import("../pages/ClassDetails"));
 const MyClasses = lazy(() => import("../pages/MyClasses"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
-const Profile = lazy(() => import("../pages/Profile"));
+
 const Settings = lazy(() => import("../pages/Settings"));
 const AdminServices = lazy(() => import("../pages/admin/AdminServices"));
 const AdminBookings = lazy(() => import("../pages/admin/AdminBookings"));
@@ -75,6 +80,12 @@ export default function AppRoutes() {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-cancel" element={<PaymentCancel />} />
             <Route path="/admin/enrollments" element={<AdminEnrollments />} />
+            <Route path="/stylist" element={<StylistDashboard />} />
+            <Route path="/stylist/bookings" element={<StylistBookings />} />
+
+            <Route path="/instructor" element={<InstructorDashboard />} />
+            <Route path="/instructor/classes" element={<InstructorClasses />} />
+            <Route path="/profile" element={<Profile />} />
             <Route
               path="/enrollment-payment/:enrollmentId"
               element={<EnrollmentPayment />}

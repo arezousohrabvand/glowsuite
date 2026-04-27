@@ -19,12 +19,25 @@ const adminLinks = [
   { to: "/admin/revenue", label: "Admin Revenue", icon: "📈" },
   { to: "/admin/enrollments", label: "Class Enrollments", icon: "🎓" },
 ];
+const stylistLinks = [
+  { to: "/stylist", label: "Stylist Dashboard", icon: "💇‍♀️" },
+  { to: "/stylist/bookings", label: "My Bookings", icon: "📅" },
+];
+
+const instructorLinks = [
+  { to: "/instructor", label: "Instructor Dashboard", icon: "🎓" },
+  { to: "/instructor/classes", label: "My Classes", icon: "🧴" },
+];
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const links = user?.role === "admin" ? adminLinks : customerLinks;
+  let links = customerLinks;
+
+  if (user?.role === "admin") links = adminLinks;
+  if (user?.role === "stylist") links = stylistLinks;
+  if (user?.role === "instructor") links = instructorLinks;
 
   const displayName =
     user?.fullName ||
@@ -51,7 +64,13 @@ export default function Sidebar() {
 
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-pink-100">
-              {user?.role === "admin" ? "Admin Panel" : "Client Area"}
+              {user?.role === "admin"
+                ? "Admin Panel"
+                : user?.role === "stylist"
+                  ? "Stylist Area"
+                  : user?.role === "instructor"
+                    ? "Instructor Area"
+                    : "Client Area"}
             </p>
             <h2 className="mt-1 text-lg font-bold">{displayName}</h2>
             <p className="text-xs text-pink-100">{user?.email || ""}</p>
