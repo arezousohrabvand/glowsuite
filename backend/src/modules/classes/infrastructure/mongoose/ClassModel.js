@@ -6,80 +6,124 @@ const classSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
+
     category: {
       type: String,
       default: "Workshop",
       trim: true,
+      index: true, // filter
     },
+
     description: {
       type: String,
       default: "",
     },
+
     instructorName: {
       type: String,
       default: "",
       trim: true,
     },
+
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
+      index: true,
     },
+
     price: {
       type: Number,
       default: 0,
       min: 0,
     },
+
     date: {
-      type: String,
-      default: "",
+      type: Date,
+      required: true,
+      index: true,
     },
+
     time: {
       type: String,
       default: "",
     },
+
     image: {
       type: String,
       default: "",
     },
 
-    // added fields for seat tracking
     capacity: {
       type: Number,
       required: true,
       default: 10,
-      min: 0,
+      min: 1,
     },
+
     enrolledCount: {
       type: Number,
       default: 0,
       min: 0,
     },
 
-    // optional status field because your controller checks isActive
+    status: {
+      type: String,
+      enum: ["active", "cancelled", "completed"],
+      default: "active",
+      index: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
     },
 
-    // optional extra field because ClassDetails uses duration
     duration: {
       type: String,
       default: "",
     },
 
-    // optional extra fields because ClassDetails checks them
     level: {
       type: String,
-      default: "",
+      default: "Beginner",
     },
+
     tags: {
       type: [String],
       default: [],
+      index: true,
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
+
+classSchema.index({ isActive: 1, date: 1 });
+
+classSchema.index({ instructor: 1, date: 1 });
+
+classSchema.index({ createdAt: -1 });
+
+classSchema.index({ _id: 1, capacity: 1, enrolledCount: 1 });
+
+classSchema.virtual("availableSeats").get(function () {
+  return Math.max(this.capacity - this.enrolledCount, 0);
+});
+
+//
+//  SAFETY
+//
+classSchema.set("toJSON", {
+  virtuals: true,
+  transform: function (doc, ret) {
+    delete ret.__v;
+    return ret;
+  },
+});
 
 export default mongoose.models.Class || mongoose.model("Class", classSchema);

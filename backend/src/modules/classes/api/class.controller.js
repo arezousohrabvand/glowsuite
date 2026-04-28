@@ -1,5 +1,9 @@
 import ClassModel from "../infrastructure/mongoose/ClassModel.js";
 import Enrollment from "../../../models/Enrollment.js";
+import {
+  toClassResponse,
+  toClassListResponse,
+} from "../contracts/class.mapper.js";
 
 async function addClassCounts(classItem) {
   const enrolledCount = await Enrollment.countDocuments({
@@ -8,12 +12,10 @@ async function addClassCounts(classItem) {
   });
 
   const capacity = Number(classItem.capacity || 0);
-  const seatsLeft = Math.max(capacity - enrolledCount, 0);
 
   return {
     ...classItem.toObject(),
     enrolledCount,
-    seatsLeft,
   };
 }
 
@@ -26,7 +28,7 @@ export const getClasses = async (req, res) => {
 
     const result = await Promise.all(classes.map(addClassCounts));
 
-    res.status(200).json(result);
+    res.status(200).json(toClassListResponse(result));
   } catch (error) {
     console.error("getClasses error:", error);
     res.status(500).json({ message: error.message });
@@ -46,7 +48,7 @@ export const getClassById = async (req, res) => {
 
     const result = await addClassCounts(classItem);
 
-    res.status(200).json(result);
+    res.status(200).json(toClassResponse(result));
   } catch (error) {
     console.error("getClassById error:", error);
     res.status(500).json({ message: error.message });
@@ -80,7 +82,8 @@ export const createAdminClass = async (req, res) => {
       price: Number(price),
     });
 
-    res.status(201).json(classItem);
+    const result = await addClassCounts(classItem);
+    res.status(201).json(toClassResponse(result));
   } catch (error) {
     console.error("createAdminClass error:", error);
     res.status(500).json({ message: error.message });
@@ -113,7 +116,8 @@ export const updateAdminClass = async (req, res) => {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    res.status(200).json(await addClassCounts(updatedClass));
+    const result = await addClassCounts(updatedClass);
+    res.status(200).json(toClassResponse(result));
   } catch (error) {
     console.error("updateAdminClass error:", error);
     res.status(500).json({ message: error.message });
