@@ -28,7 +28,7 @@ const slotHoldSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
-      index: true,
+      expires: 0,
     },
     status: {
       type: String,
@@ -41,10 +41,10 @@ const slotHoldSchema = new mongoose.Schema(
   },
 );
 
-// one active hold per same stylist/date/time
 slotHoldSchema.index(
-  { stylistName: 1, date: 1, time: 1, status: 1 },
+  { stylistName: 1, date: 1, time: 1 },
   {
+    unique: true,
     partialFilterExpression: { status: "active" },
   },
 );
