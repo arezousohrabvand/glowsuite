@@ -1,20 +1,13 @@
-export function toSlotHoldResponse(slotHoldDoc) {
-  if (!slotHoldDoc) return null;
-
-  return {
-    id: slotHoldDoc._id.toString(),
-    user: slotHoldDoc.user?.toString?.() || slotHoldDoc.user,
-    serviceName: slotHoldDoc.serviceName,
-    stylistName: slotHoldDoc.stylistName,
-    date: slotHoldDoc.date,
-    time: slotHoldDoc.time,
-    status: slotHoldDoc.status,
-    expiresAt: slotHoldDoc.expiresAt,
-    createdAt: slotHoldDoc.createdAt,
-    updatedAt: slotHoldDoc.updatedAt,
-  };
-}
-
-export function toSlotHoldListResponse(slotHolds = []) {
-  return slotHolds.map(toSlotHoldResponse);
-}
+export const mapSlotHoldToResponse = (hold) => ({
+  id: hold._id,
+  holdId: hold._id,
+  user: hold.user,
+  serviceName: hold.serviceName,
+  stylistName: hold.stylistName,
+  date: hold.date,
+  time: hold.time,
+  expiresAt: hold.expiresAt,
+  status: hold.status,
+  createdAt: hold.createdAt,
+  updatedAt: hold.updatedAt,
+});

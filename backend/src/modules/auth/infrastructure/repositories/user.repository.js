@@ -2,7 +2,7 @@ import User from "../mongoose/UserModel.js";
 
 export const userRepository = {
   async findByEmail(email) {
-    return User.findOne({ email });
+    return User.findOne({ email }).select("+password");
   },
 
   async findById(id) {

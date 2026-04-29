@@ -9,25 +9,62 @@ export const bookingRepository = {
     return Booking.findById(id);
   },
 
-  async findByIdAndUpdate(id, update) {
-    return Booking.findByIdAndUpdate(id, update, {
-      new: true,
-    });
+  async findByIdWithDetails(id) {
+    return Booking.findById(id)
+      .populate("user")
+      .populate("service")
+      .populate("stylist");
   },
 
-  async findByUser(userId) {
-    return Booking.find({ user: userId }).sort({ createdAt: -1 });
+  async findMyBookings(userId) {
+    return Booking.find({ user: userId })
+      .populate("service")
+      .sort({ createdAt: -1 });
   },
 
-  async findAll(filter = {}) {
-    return Booking.find(filter).sort({ createdAt: -1 });
+  async findAdminBookings(filters = {}) {
+    const query = {};
+
+    if (filters.status) query.status = filters.status;
+    if (filters.paymentStatus) query.paymentStatus = filters.paymentStatus;
+    if (filters.stylist) query.stylist = filters.stylist;
+    if (filters.user) query.user = filters.user;
+
+    return Booking.find(query)
+      .populate("user", "firstName lastName email phone role")
+      .populate("service")
+      .populate("stylist", "firstName lastName email role")
+      .sort({ slotStart: -1 });
   },
 
-  async count(filter = {}) {
-    return Booking.countDocuments(filter);
+  async findConflict({
+    stylistId,
+    slotStart,
+    slotEnd,
+    excludeBookingId = null,
+  }) {
+    const query = {
+      stylist: stylistId,
+      status: { $in: ["Pending", "Upcoming", "Confirmed"] },
+      slotStart: { $lt: new Date(slotEnd) },
+      slotEnd: { $gt: new Date(slotStart) },
+    };
+
+    if (excludeBookingId) {
+      query._id = { $ne: excludeBookingId };
+    }
+
+    return Booking.findOne(query);
   },
 
-  async delete(id) {
-    return Booking.findByIdAndDelete(id);
+  async updateById(id, data) {
+    return Booking.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { returnDocument: "after", runValidators: false },
+    )
+      .populate("service")
+      .populate("user")
+      .populate("stylist");
   },
 };

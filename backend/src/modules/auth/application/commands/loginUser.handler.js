@@ -7,7 +7,7 @@ export const loginUserHandler = async ({ email, password }) => {
 
   const user = await userRepository.findByEmail(normalizedEmail);
 
-  if (!user) {
+  if (!user || !user.password) {
     const error = new Error("Invalid email or password");
     error.statusCode = 401;
     throw error;

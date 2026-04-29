@@ -1,28 +1,26 @@
-import { toBookingDto } from "./booking.dto.js";
+export const mapBookingToResponse = (booking) => ({
+  id: booking._id,
+  user: booking.user,
+  service: booking.service,
+  serviceName: booking.serviceName,
+  stylist: booking.stylist,
+  stylistName: booking.stylistName,
+  date: booking.date,
+  time: booking.time,
+  slotStart: booking.slotStart,
+  slotEnd: booking.slotEnd,
+  notes: booking.notes,
+  stylistNotes: booking.stylistNotes,
+  price: booking.price,
+  status: booking.status,
+  paymentStatus: booking.paymentStatus,
+  paidAt: booking.paidAt,
+  stripeSessionId: booking.stripeSessionId,
+  reminderEmailSent: booking.reminderEmailSent,
+  holdId: booking.holdId,
+  createdAt: booking.createdAt,
+  updatedAt: booking.updatedAt,
+});
 
-export const bookingMapper = {
-  toDto(booking) {
-    if (!booking) return null;
-    return toBookingDto(booking);
-  },
-
-  toDtoList(bookings = []) {
-    return bookings.map((b) => toBookingDto(b));
-  },
-
-  toPersistence(data) {
-    return {
-      user: data.userId,
-      service: data.serviceId || null,
-      serviceName: data.serviceName,
-      stylist: data.stylistId,
-      stylistName: data.stylistName,
-      date: data.date,
-      time: data.time,
-      slotStart: data.slotStart,
-      slotEnd: data.slotEnd,
-      notes: data.notes || "",
-      price: data.price || 0,
-    };
-  },
-};
+export const mapBookingsToResponse = (bookings) =>
+  bookings.map((booking) => mapBookingToResponse(booking));

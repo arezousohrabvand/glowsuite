@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../../models/User.js";
+import User from "../../modules/users/infrastructure/mongoose/UserModel.js";
 
 export async function protect(req, res, next) {
   try {

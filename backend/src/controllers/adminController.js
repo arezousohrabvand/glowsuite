@@ -1,6 +1,6 @@
 import Booking from "../models/Booking.js";
 import Service from "../models/Service.js";
-import User from "../models/User.js";
+import User from "../modules/users/infrastructure/mongoose/UserModel.js";
 import Class from "../models/Class.js";
 import Enrollment from "../models/Enrollment.js";
 import Billing from "../models/Billing.js";

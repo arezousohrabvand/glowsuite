@@ -1,11 +1,10 @@
 import express from "express";
 import cors from "cors";
-
+import authRoutes from "./modules/auth/api/auth.routes.js";
 import classRoutes from "./modules/classes/api/class.routes.js";
-import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./modules/users/api/user.routes.js";
 import bookingRoutes from "./modules/bookings/api/booking.routes.js";
 import enrollmentRoutes from "./routes/enrollmentRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
 import seedRoutes from "./routes/seedRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -14,10 +13,10 @@ import stripeRoutes from "./routes/stripeRoutes.js";
 import stylistRoutes from "./routes/stylistRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
 import serviceRoutes from "./modules/services/api/service.routes.js";
+import profileRoutes from "./modules/users/api/profile.routes.js";
 
 import { stripeWebhookHandler } from "./controllers/paymentController.js";
 
-// ✅ FIXED: correct shared middleware import
 import { notFound, errorHandler } from "./shared/middleware/errorMiddleware.js";
 
 const app = express();
@@ -67,8 +66,8 @@ app.use("/api/stripe", stripeRoutes);
 app.use("/api/stylist", stylistRoutes);
 app.use("/api/instructor", instructorRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/profile", profileRoutes);
 
-// ❌ MUST be last
 app.use(notFound);
 app.use(errorHandler);
 

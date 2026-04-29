@@ -1,12 +1,19 @@
 import { bookingRepository } from "../../infrastructure/repositories/booking.repository.js";
-import { createOutboxEvent } from "../../../../shared/utils/createOutboxEvent.js";
-import {
-  getCustomerName,
-  getStylistName,
-} from "../helpers/bookingEmail.helper.js";
 import { mapBookingToResponse } from "../../contracts/booking.mapper.js";
+import { createOutboxEvent } from "../../../../shared/utils/createOutboxEvent.js";
 
-export const confirmBookingHandler = async ({ bookingId, status }) => {
+const getCustomerName = (user) =>
+  `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+  "GlowSuite customer";
+
+const getStylistName = (booking) =>
+  booking.stylistName ||
+  `${booking.stylist?.firstName || ""} ${booking.stylist?.lastName || ""}`.trim();
+
+export const adminUpdateBookingStatusHandler = async ({
+  bookingId,
+  status,
+}) => {
   const booking = await bookingRepository.findByIdWithDetails(bookingId);
 
   if (!booking) {

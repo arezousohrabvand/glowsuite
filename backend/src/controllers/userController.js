@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User from "../../modules/users/infrastructure/mongoose/UserModel.js";
 
 export const getMyProfile = async (req, res) => {
   try {
