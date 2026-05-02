@@ -108,9 +108,7 @@ export default function Dashboard() {
                 "Instructor",
               date: item.classItem?.date || item.date || "",
               status:
-                item.paymentStatus === "paid"
-                  ? "Paid"
-                  : item.status || "Enrolled",
+                item.paymentStatus === "paid" ? "Paid" : item.status || "Enrolled",
             })),
           );
         }
@@ -258,33 +256,23 @@ export default function Dashboard() {
 
                   <div className="mt-3 space-y-2 text-sm text-slate-700">
                     <p>
-                      <span className="font-semibold text-slate-900">
-                        First Name:
-                      </span>{" "}
+                      <span className="font-semibold text-slate-900">First Name:</span>{" "}
                       {currentUser?.firstName || "Not provided"}
                     </p>
                     <p>
-                      <span className="font-semibold text-slate-900">
-                        Last Name:
-                      </span>{" "}
+                      <span className="font-semibold text-slate-900">Last Name:</span>{" "}
                       {currentUser?.lastName || "Not provided"}
                     </p>
                     <p>
-                      <span className="font-semibold text-slate-900">
-                        Phone:
-                      </span>{" "}
+                      <span className="font-semibold text-slate-900">Phone:</span>{" "}
                       {currentUser?.phone || "Not provided"}
                     </p>
                     <p>
-                      <span className="font-semibold text-slate-900">
-                        Email:
-                      </span>{" "}
+                      <span className="font-semibold text-slate-900">Email:</span>{" "}
                       {currentUser?.email || "Not provided"}
                     </p>
                     <p>
-                      <span className="font-semibold text-slate-900">
-                        Role:
-                      </span>{" "}
+                      <span className="font-semibold text-slate-900">Role:</span>{" "}
                       {role || "customer"}
                     </p>
                   </div>
@@ -321,12 +309,9 @@ export default function Dashboard() {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
                   Instructor Area
                 </p>
-                <h2 className="mt-2 text-xl font-bold text-slate-900">
-                  Students
-                </h2>
+                <h2 className="mt-2 text-xl font-bold text-slate-900">Students</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Student email, phone, attendance, and class details will show
-                  here.
+                  Student email, phone, attendance, and class details will show here.
                 </p>
               </div>
 
@@ -343,8 +328,8 @@ export default function Dashboard() {
                   <tbody className="divide-y divide-slate-100">
                     <tr>
                       <td className="px-4 py-4 text-slate-600" colSpan="4">
-                        No students loaded yet. Connect this section to your
-                        instructor classes API next.
+                        No students loaded yet. Connect this section to your instructor
+                        classes API next.
                       </td>
                     </tr>
                   </tbody>
@@ -383,10 +368,7 @@ export default function Dashboard() {
                   <StatCard title="Classes Joined" value={classes.length} />
                 </div>
                 <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <StatCard
-                    title="Loyalty Points"
-                    value={rewardSummary.points}
-                  />
+                  <StatCard title="Loyalty Points" value={rewardSummary.points} />
                 </div>
               </section>
 
@@ -416,9 +398,7 @@ export default function Dashboard() {
 
                   <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-slate-900">
-                        My Classes
-                      </h2>
+                      <h2 className="text-xl font-bold text-slate-900">My Classes</h2>
                       <Link
                         to="/my-classes"
                         className="text-sm font-medium text-pink-600 hover:underline"
@@ -442,9 +422,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      Quick Actions
-                    </h2>
+                    <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
 
                     <div className="mt-4 grid gap-3">
                       <Link
@@ -485,9 +463,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      My Rewards
-                    </h2>
+                    <h2 className="text-xl font-bold text-slate-900">My Rewards</h2>
 
                     <div className="mt-4 space-y-3">
                       <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">

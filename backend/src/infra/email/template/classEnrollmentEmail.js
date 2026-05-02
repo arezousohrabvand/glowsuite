@@ -1,9 +1,4 @@
-export const classEnrollmentEmail = ({
-  studentName,
-  className,
-  date,
-  time,
-}) => {
+export const classEnrollmentEmail = ({ studentName, className, date, time }) => {
   return `
     <div style="font-family:Arial,sans-serif;background:#faf7f2;padding:32px;">
       <div style="max-width:600px;margin:auto;background:white;border-radius:18px;padding:28px;">

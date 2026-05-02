@@ -51,9 +51,7 @@ export const rescheduleBooking = async (bookingId, payload) => {
 };
 
 export const markBookingPaidAfterSuccess = async (sessionId) => {
-  const res = await API.get(
-    `/bookings/payment-success?session_id=${sessionId}`,
-  );
+  const res = await API.get(`/bookings/payment-success?session_id=${sessionId}`);
   return res.data;
 };
 

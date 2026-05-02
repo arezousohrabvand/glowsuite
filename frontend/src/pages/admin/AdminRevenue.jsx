@@ -53,13 +53,11 @@ export default function AdminRevenue() {
             Financial Overview
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight">
-            Revenue Dashboard
-          </h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight">Revenue Dashboard</h1>
 
           <p className="mt-3 text-sm text-white/70 max-w-2xl">
-            Track total revenue from bookings and classes. Monitor financial
-            performance like a real SaaS dashboard.
+            Track total revenue from bookings and classes. Monitor financial performance
+            like a real SaaS dashboard.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -71,9 +69,7 @@ export default function AdminRevenue() {
 
         {/* DETAILS */}
         <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
-          <h2 className="text-xl font-bold text-zinc-900 mb-4">
-            Revenue Details
-          </h2>
+          <h2 className="text-xl font-bold text-zinc-900 mb-4">Revenue Details</h2>
 
           {loading ? (
             <p>Loading revenue...</p>
@@ -95,9 +91,7 @@ export default function AdminRevenue() {
 function StatCard({ label, value }) {
   return (
     <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
-      <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-[0.2em] text-white/50">{label}</p>
       <p className="mt-2 text-3xl font-bold">{formatMoney(value)}</p>
     </div>
   );
@@ -107,9 +101,7 @@ function DetailCard({ title, value }) {
   return (
     <div className="rounded-2xl border border-zinc-200 p-5">
       <p className="text-sm text-zinc-500">{title}</p>
-      <p className="mt-2 text-2xl font-bold text-zinc-900">
-        {formatMoney(value)}
-      </p>
+      <p className="mt-2 text-2xl font-bold text-zinc-900">{formatMoney(value)}</p>
     </div>
   );
 }

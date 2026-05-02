@@ -143,7 +143,6 @@ bookingSchema.index({ stylist: 1, paymentStatus: 1, slotStart: 1 });
 bookingSchema.index({ user: 1, slotStart: -1 });
 bookingSchema.index({ slotStart: 1, slotEnd: 1 });
 
-const Booking =
-  mongoose.models.Booking || mongoose.model("Booking", bookingSchema);
+const Booking = mongoose.models.Booking || mongoose.model("Booking", bookingSchema);
 
 export default Booking;

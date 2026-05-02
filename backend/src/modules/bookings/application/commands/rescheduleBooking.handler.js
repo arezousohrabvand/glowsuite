@@ -87,11 +87,7 @@ export const rescheduleBookingHandler = async ({ bookingId, userId, data }) => {
     parseDurationToMinutes(booking.service?.duration || 60),
   );
 
-  const { slotStart, slotEnd } = buildSlotDates(
-    data.date,
-    data.time,
-    durationMinutes,
-  );
+  const { slotStart, slotEnd } = buildSlotDates(data.date, data.time, durationMinutes);
 
   const conflict = await bookingRepository.findConflict({
     stylistId: stylistUser._id,

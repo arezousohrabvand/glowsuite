@@ -126,16 +126,12 @@ const gallery = [
 function SectionIntro({ eyebrow, title, text, align = "left" }) {
   return (
     <div
-      className={`mb-8 ${
-        align === "center" ? "mx-auto max-w-3xl text-center" : ""
-      }`}
+      className={`mb-8 ${align === "center" ? "mx-auto max-w-3xl text-center" : ""}`}
     >
       <p className="text-sm font-semibold uppercase tracking-[0.22em] text-rose-500">
         {eyebrow}
       </p>
-      <h2 className="mt-2 text-3xl font-bold text-zinc-900 md:text-4xl">
-        {title}
-      </h2>
+      <h2 className="mt-2 text-3xl font-bold text-zinc-900 md:text-4xl">{title}</h2>
       {text ? <p className="mt-3 max-w-2xl text-zinc-600">{text}</p> : null}
     </div>
   );
@@ -175,9 +171,9 @@ export default function Landing() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-zinc-600 md:text-lg">
-              Discover tailored cuts, dimensional color, smoothing services,
-              bridal beauty, and premium styling experiences designed around
-              your goals, texture, and lifestyle.
+              Discover tailored cuts, dimensional color, smoothing services, bridal
+              beauty, and premium styling experiences designed around your goals,
+              texture, and lifestyle.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -249,9 +245,7 @@ export default function Landing() {
               <p className="text-xs uppercase tracking-[0.2em] text-rose-500">
                 Client favorite
               </p>
-              <p className="mt-2 text-lg font-bold text-zinc-900">
-                Signature Balayage
-              </p>
+              <p className="mt-2 text-lg font-bold text-zinc-900">Signature Balayage</p>
               <p className="text-sm text-zinc-600">
                 Soft blend • Luxury gloss • Premium finish
               </p>
@@ -277,9 +271,7 @@ export default function Landing() {
           </div>
           <div className="rounded-2xl bg-zinc-50 p-5 text-center">
             <p className="text-3xl font-bold text-zinc-900">20+</p>
-            <p className="mt-2 text-sm text-zinc-500">
-              Specialized service options
-            </p>
+            <p className="mt-2 text-sm text-zinc-500">Specialized service options</p>
           </div>
         </div>
       </section>
@@ -358,9 +350,7 @@ export default function Landing() {
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-zinc-900">
-                  {service.name}
-                </h3>
+                <h3 className="text-xl font-bold text-zinc-900">{service.name}</h3>
                 <p className="mt-2 text-sm font-medium text-zinc-600">
                   Stylist: {service.stylist}
                 </p>
@@ -370,9 +360,7 @@ export default function Landing() {
                 </p>
 
                 <div className="mt-5 flex items-center justify-between">
-                  <p className="text-xl font-bold text-zinc-900">
-                    {service.price}
-                  </p>
+                  <p className="text-xl font-bold text-zinc-900">{service.price}</p>
                   <Link
                     to={`/booking?service=${service.id}`}
                     className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
@@ -435,8 +423,7 @@ export default function Landing() {
                 Soft dimensional blonde refresh
               </h3>
               <p className="mt-3 text-zinc-600">
-                A premium blend designed for softness, dimension, and a refined
-                finish.
+                A premium blend designed for softness, dimension, and a refined finish.
               </p>
             </div>
           </div>
@@ -481,8 +468,7 @@ export default function Landing() {
                 Editorial wave transformation
               </h3>
               <p className="mt-3 text-zinc-600">
-                Soft glam movement with a polished finish for events and luxury
-                styling.
+                Soft glam movement with a polished finish for events and luxury styling.
               </p>
             </div>
           </div>
@@ -500,9 +486,8 @@ export default function Landing() {
               Choose the stylist that fits your goals
             </h2>
             <p className="mt-4 max-w-xl text-zinc-600">
-              Whether you want precision cuts, dimensional color, or bridal
-              styling, our artists are selected to match your beauty goals with
-              the right expertise.
+              Whether you want precision cuts, dimensional color, or bridal styling, our
+              artists are selected to match your beauty goals with the right expertise.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-4">
@@ -533,9 +518,7 @@ export default function Landing() {
                   className="h-56 w-full object-cover"
                 />
                 <div className="p-4">
-                  <p className="text-sm font-semibold text-zinc-900">
-                    {stylist.name}
-                  </p>
+                  <p className="text-sm font-semibold text-zinc-900">{stylist.name}</p>
                   <p className="mt-1 text-xs text-zinc-500">{stylist.role}</p>
                 </div>
               </div>
@@ -576,12 +559,8 @@ export default function Landing() {
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-zinc-900">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-zinc-600">
-                  {item.text}
-                </p>
+                <h3 className="text-xl font-bold text-zinc-900">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">{item.text}</p>
 
                 <div className="mt-6 flex items-center justify-between">
                   <Link
@@ -636,9 +615,7 @@ export default function Landing() {
               >
                 <div className="mb-3 text-sm">★★★★★</div>
                 <p className="text-sm leading-7 text-zinc-600">{item.text}</p>
-                <p className="mt-4 text-sm font-semibold text-zinc-900">
-                  {item.name}
-                </p>
+                <p className="mt-4 text-sm font-semibold text-zinc-900">{item.name}</p>
                 <p className="text-xs text-zinc-500">{item.role}</p>
               </div>
             ))}
@@ -669,9 +646,7 @@ export default function Landing() {
                   />
                 </div>
                 <div className="p-4">
-                  <p className="text-sm font-semibold text-zinc-900">
-                    {item.title}
-                  </p>
+                  <p className="text-sm font-semibold text-zinc-900">{item.title}</p>
                 </div>
               </div>
             ))}
@@ -768,8 +743,8 @@ export default function Landing() {
                 Ready for your next salon experience?
               </h2>
               <p className="mt-4 max-w-xl text-white/75">
-                Book your appointment, explore our services, meet the stylists,
-                or join one of our premium salon education classes.
+                Book your appointment, explore our services, meet the stylists, or join
+                one of our premium salon education classes.
               </p>
             </div>
 

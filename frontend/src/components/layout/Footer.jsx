@@ -21,8 +21,8 @@ export default function Footer() {
           </div>
 
           <p className="mt-5 max-w-sm text-sm leading-6 text-[#6f6250]">
-            A modern salon platform designed for premium booking, beauty
-            classes, and personalized styling experiences.
+            A modern salon platform designed for premium booking, beauty classes, and
+            personalized styling experiences.
           </p>
         </div>
 

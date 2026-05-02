@@ -109,10 +109,7 @@ async function startServer() {
 
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(
-        "💳 Stripe loaded:",
-        process.env.STRIPE_SECRET_KEY ? "YES" : "NO",
-      );
+      console.log("💳 Stripe loaded:", process.env.STRIPE_SECRET_KEY ? "YES" : "NO");
       console.log(
         "🪝 Stripe webhook secret loaded:",
         process.env.STRIPE_WEBHOOK_SECRET ? "YES" : "NO",

@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Sidebar from "../../components/layout/Sidebar";
 import { getAdminStats } from "../../api/adminApi";
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+function getToken() {
+  const rawUserInfo = localStorage.getItem("userInfo");
+  const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
+
+  return (
+    localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken || ""
+  );
+}
 
 function formatDateTime(booking) {
   if (booking.slotStart) {
@@ -107,6 +120,75 @@ export default function AdminDashboard() {
     loadStats();
   }, []);
 
+  const [revenue, setRevenue] = useState(null);
+  const [revenueByDate, setRevenueByDate] = useState([]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
+  const [reconcileResult, setReconcileResult] = useState(null);
+
+  const loadAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      setAnalyticsError("");
+
+      const token = getToken();
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const [revenueRes, chartRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/admin/revenue`, {
+          params: { from, to },
+          headers,
+        }),
+        axios.get(`${API_BASE_URL}/admin/revenue-by-date`, {
+          params: { from, to },
+          headers,
+        }),
+      ]);
+
+      setRevenue(revenueRes.data);
+
+      setRevenueByDate(
+        chartRes.data.map((item) => ({
+          date: item._id,
+          revenue: item.revenue,
+        })),
+      );
+    } catch (error) {
+      console.error("Failed to load analytics:", error);
+      setAnalyticsError(
+        error.response?.data?.message || "Failed to load revenue analytics",
+      );
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  const runReconciliation = async () => {
+    try {
+      const token = getToken();
+
+      const res = await axios.get(`${API_BASE_URL}/admin/reconcile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setReconcileResult(res.data);
+    } catch (error) {
+      console.error("Reconciliation failed:", error);
+      setReconcileResult({
+        error: error.response?.data?.message || "Reconciliation failed",
+      });
+    }
+  };
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
   const upcomingApprovedBookings = useMemo(() => {
     const bookings = stats?.upcomingBookingsList || stats?.recentBookings || [];
 
@@ -167,8 +249,8 @@ export default function AdminDashboard() {
                   Admin Dashboard
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-                  Manage approved appointments, operations, services, customers,
-                  and business activity from one clean workspace.
+                  Manage approved appointments, operations, services, customers, and
+                  business activity from one clean workspace.
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -223,13 +305,115 @@ export default function AdminDashboard() {
               </div>
             </div>
           </section>
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-pink-500">
+                  Revenue Analytics
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                  Revenue Dashboard
+                </h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  Track paid billing revenue, transactions, and Stripe reconciliation.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <input
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm"
+                />
+
+                <input
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm"
+                />
+
+                <button
+                  onClick={loadAnalytics}
+                  className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-pink-600"
+                >
+                  Apply
+                </button>
+
+                <button
+                  onClick={runReconciliation}
+                  className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-800 hover:border-slate-900"
+                >
+                  Reconcile Stripe
+                </button>
+              </div>
+            </div>
+
+            {analyticsError ? (
+              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {analyticsError}
+              </div>
+            ) : null}
+
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <StatCard
+                title="Total Revenue"
+                value={`$${Number(revenue?.totalRevenue || 0).toFixed(2)}`}
+                hint="Paid billing total"
+              />
+              <StatCard
+                title="Transactions"
+                value={revenue?.totalTransactions || 0}
+                hint="Paid payments"
+              />
+              <StatCard
+                title="Avg Order Value"
+                value={`$${Number(revenue?.avgOrderValue || 0).toFixed(2)}`}
+                hint="Revenue / transactions"
+              />
+            </div>
+
+            <div className="mt-6 h-80 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+              {analyticsLoading ? (
+                <div className="grid h-full place-items-center text-sm text-slate-500">
+                  Loading chart...
+                </div>
+              ) : revenueByDate.length === 0 ? (
+                <div className="grid h-full place-items-center text-sm text-slate-500">
+                  No revenue data for this range.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueByDate}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="revenue" strokeWidth={3} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {reconcileResult ? (
+              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                {reconcileResult.error ? (
+                  <p className="text-red-600">{reconcileResult.error}</p>
+                ) : (
+                  <p>
+                    Stripe reconciliation found{" "}
+                    <strong>{reconcileResult.mismatches?.length || 0}</strong>{" "}
+                    mismatch(es).
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </section>
 
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               title="Upcoming Approved"
-              value={
-                (stats?.upcomingBookings || 0) + (stats?.confirmedBookings || 0)
-              }
+              value={(stats?.upcomingBookings || 0) + (stats?.confirmedBookings || 0)}
               hint="Upcoming + Confirmed"
             />
             <StatCard
@@ -280,8 +464,7 @@ export default function AdminDashboard() {
                             {getCustomerName(booking)}
                           </p>
                           <p className="mt-1 text-sm text-slate-600">
-                            {getServiceName(booking)} •{" "}
-                            {getStylistName(booking)}
+                            {getServiceName(booking)} • {getStylistName(booking)}
                           </p>
                         </div>
 
@@ -300,9 +483,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Quick Management
-                </h2>
+                <h2 className="text-xl font-bold text-slate-900">Quick Management</h2>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <ManagementCard
@@ -331,9 +512,7 @@ export default function AdminDashboard() {
 
             <div className="space-y-6">
               <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Admin Actions
-                </h2>
+                <h2 className="text-xl font-bold text-slate-900">Admin Actions</h2>
 
                 <div className="mt-4 grid gap-3">
                   <Link
@@ -367,8 +546,8 @@ export default function AdminDashboard() {
                     Admin Note
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/90">
-                    Focus on confirmed and upcoming bookings first so the daily
-                    schedule stays clean and operational.
+                    Focus on confirmed and upcoming bookings first so the daily schedule
+                    stays clean and operational.
                   </p>
                 </div>
               </div>

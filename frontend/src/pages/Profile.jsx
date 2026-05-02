@@ -8,9 +8,7 @@ import { getMyProfile, updateMyProfile } from "../api/profileApi";
 function StatCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-1 break-all text-base font-medium text-zinc-900">
         {value || "Not provided"}
       </p>
@@ -18,15 +16,7 @@ function StatCard({ label, value }) {
   );
 }
 
-function FloatingInput({
-  label,
-  name,
-  type = "text",
-  value,
-  onChange,
-  error,
-  icon,
-}) {
+function FloatingInput({ label, name, type = "text", value, onChange, error, icon }) {
   return (
     <div>
       <div className="relative">
@@ -108,8 +98,7 @@ export default function Profile() {
 
   const fullName = useMemo(() => {
     return (
-      `${profile.firstName || ""} ${profile.lastName || ""}`.trim() ||
-      "Glow Member"
+      `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Glow Member"
     );
   }, [profile.firstName, profile.lastName]);
 
@@ -222,9 +211,7 @@ export default function Profile() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-rose-50 p-12">Loading profile...</div>
-    );
+    return <div className="min-h-screen bg-rose-50 p-12">Loading profile...</div>;
   }
 
   if (pageError) {
@@ -262,8 +249,8 @@ export default function Profile() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-zinc-600">
-            View your personal details, update your account information, and
-            keep your GlowSuite profile current.
+            View your personal details, update your account information, and keep your
+            GlowSuite profile current.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-5">

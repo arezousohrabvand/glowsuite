@@ -27,10 +27,7 @@ export async function findClasses({
   const skip = (Number(page) - 1) * Number(limit);
 
   const [items, total] = await Promise.all([
-    ClassModel.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit)),
+    ClassModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
     ClassModel.countDocuments(query),
   ]);
 

@@ -28,17 +28,13 @@ export default function InstructorDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-8 text-zinc-500">Loading instructor dashboard...</div>
-    );
+    return <div className="p-8 text-zinc-500">Loading instructor dashboard...</div>;
   }
 
   return (
     <div className="min-h-screen bg-stone-50 p-6 md:p-10">
       <div className="mb-8">
-        <p className="text-sm font-medium text-rose-500">
-          Instructor Workspace
-        </p>
+        <p className="text-sm font-medium text-rose-500">Instructor Workspace</p>
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
           Instructor Dashboard
         </h1>
@@ -72,9 +68,7 @@ export default function InstructorDashboard() {
 
       <div className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-zinc-900">Recent Classes</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Latest classes assigned to you.
-        </p>
+        <p className="mt-1 text-sm text-zinc-500">Latest classes assigned to you.</p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {data.recentClasses?.length > 0 ? (

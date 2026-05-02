@@ -11,12 +11,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80",
     bio: "Charlotte is known for polished precision cutting, modern shape refinement, face-framing balance, and elegant finishes tailored to each client’s features.",
-    specialties: [
-      "Precision Cuts",
-      "Fringe Design",
-      "Face Framing",
-      "Shape Refresh",
-    ],
+    specialties: ["Precision Cuts", "Fringe Design", "Face Framing", "Shape Refresh"],
     vibe: "Refined • Modern • Detail-focused",
   },
   {
@@ -27,12 +22,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=1200&q=80",
     bio: "Sophia specializes in dimensional blonding, balayage placement, gloss refinement, and luxury color services designed for seamless grow-out and elevated shine.",
-    specialties: [
-      "Balayage",
-      "Luxury Blonding",
-      "Gloss & Tone",
-      "Dimensional Color",
-    ],
+    specialties: ["Balayage", "Luxury Blonding", "Gloss & Tone", "Dimensional Color"],
     vibe: "Luxury • Dimensional • Signature Color",
   },
   {
@@ -54,12 +44,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1200&q=80",
     bio: "Olivia focuses on elegant bridal styling, event beauty, secure structure, and romantic finishes that look polished in person and on camera.",
-    specialties: [
-      "Bridal Hair",
-      "Preview Sessions",
-      "Event Styling",
-      "Elegant Updos",
-    ],
+    specialties: ["Bridal Hair", "Preview Sessions", "Event Styling", "Elegant Updos"],
     vibe: "Elegant • Romantic • Bridal Luxury",
   },
   {
@@ -81,12 +66,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
     bio: "Isabella delivers sleek smoothing services, repair-focused treatment planning, and high-shine finishes for clients who want polished control and softness.",
-    specialties: [
-      "Keratin",
-      "Smoothing",
-      "Shine Services",
-      "Repair Treatments",
-    ],
+    specialties: ["Keratin", "Smoothing", "Shine Services", "Repair Treatments"],
     vibe: "Sleek • Smooth • High-shine",
   },
   {
@@ -97,12 +77,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
     bio: "Emma blends wellness-based salon care with restorative treatments, scalp balance support, and healthy-hair routines that feel luxurious and practical.",
-    specialties: [
-      "Scalp Care",
-      "Repair Rituals",
-      "Hair Wellness",
-      "Hydration Care",
-    ],
+    specialties: ["Scalp Care", "Repair Rituals", "Hair Wellness", "Hydration Care"],
     vibe: "Restorative • Wellness • Healthy Hair",
   },
 ];
@@ -166,9 +141,9 @@ export default function Stylists() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 md:text-lg">
-              Discover the stylists behind our cuts, color, bridal beauty,
-              smoothing services, texture care, and wellness treatments. Each
-              artist brings a distinct specialty and luxury salon experience.
+              Discover the stylists behind our cuts, color, bridal beauty, smoothing
+              services, texture care, and wellness treatments. Each artist brings a
+              distinct specialty and luxury salon experience.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -230,16 +205,12 @@ export default function Stylists() {
                     <Badge>{stylist.experience}</Badge>
                   </div>
 
-                  <h3 className="text-2xl font-bold text-zinc-900">
-                    {stylist.name}
-                  </h3>
+                  <h3 className="text-2xl font-bold text-zinc-900">{stylist.name}</h3>
                   <p className="mt-2 text-sm font-medium text-zinc-500">
                     {stylist.vibe}
                   </p>
 
-                  <p className="mt-4 text-sm leading-6 text-zinc-600">
-                    {stylist.bio}
-                  </p>
+                  <p className="mt-4 text-sm leading-6 text-zinc-600">{stylist.bio}</p>
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     {stylist.specialties.slice(0, 3).map((specialty) => (
@@ -280,8 +251,7 @@ export default function Stylists() {
               Choose the stylist that fits your goals
             </h2>
             <p className="mt-3 max-w-2xl text-zinc-600">
-              Explore our salon artists by specialty, style, and signature
-              services.
+              Explore our salon artists by specialty, style, and signature services.
             </p>
           </div>
         </div>
@@ -303,9 +273,7 @@ export default function Stylists() {
                   />
 
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent p-5">
-                    <p className="text-xl font-bold text-white">
-                      {stylist.name}
-                    </p>
+                    <p className="text-xl font-bold text-white">{stylist.name}</p>
                     <p className="mt-1 text-sm text-white/85">{stylist.role}</p>
                   </div>
                 </div>
@@ -318,13 +286,9 @@ export default function Stylists() {
                     </span>
                   </div>
 
-                  <p className="text-sm font-medium text-zinc-500">
-                    {stylist.vibe}
-                  </p>
+                  <p className="text-sm font-medium text-zinc-500">{stylist.vibe}</p>
 
-                  <p className="mt-4 text-sm leading-6 text-zinc-600">
-                    {stylist.bio}
-                  </p>
+                  <p className="mt-4 text-sm leading-6 text-zinc-600">{stylist.bio}</p>
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     {stylist.specialties.slice(0, 3).map((specialty) => (
@@ -387,9 +351,8 @@ export default function Stylists() {
                 Need help choosing your stylist?
               </h2>
               <p className="mt-4 max-w-xl text-white/75">
-                Book a consultation and we’ll guide you to the stylist and
-                service combination that best fits your hair goals, texture, and
-                routine.
+                Book a consultation and we’ll guide you to the stylist and service
+                combination that best fits your hair goals, texture, and routine.
               </p>
             </div>
 

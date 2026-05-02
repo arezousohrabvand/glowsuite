@@ -81,10 +81,7 @@ export async function getValidCoupon({ couponCode, type, subtotal, state }) {
     }
   }
 
-  if (
-    coupon.minimumSubtotal &&
-    Number(subtotal) < Number(coupon.minimumSubtotal)
-  ) {
+  if (coupon.minimumSubtotal && Number(subtotal) < Number(coupon.minimumSubtotal)) {
     return null;
   }
 

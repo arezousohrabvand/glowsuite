@@ -45,9 +45,7 @@ const ClassesTable = ({ classes = [] }) => {
           >
             <div>
               <h3 className="font-medium text-gray-900">{item.title}</h3>
-              <p className="text-sm text-gray-500">
-                Instructor: {item.instructor}
-              </p>
+              <p className="text-sm text-gray-500">Instructor: {item.instructor}</p>
               <p className="text-sm text-gray-400">{item.date || "TBA"}</p>
             </div>
 
@@ -67,9 +65,7 @@ const ClassesTable = ({ classes = [] }) => {
                 }}
                 disabled={!item.id}
                 className={`rounded-lg border px-4 py-2 text-sm transition ${
-                  item.id
-                    ? "hover:bg-gray-100"
-                    : "cursor-not-allowed opacity-50"
+                  item.id ? "hover:bg-gray-100" : "cursor-not-allowed opacity-50"
                 }`}
               >
                 View

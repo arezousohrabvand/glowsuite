@@ -19,9 +19,7 @@ function StatusBadge({ value }) {
           : "bg-zinc-50 text-zinc-700 ring-zinc-100";
 
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}
-    >
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}>
       {value || "Unknown"}
     </span>
   );
@@ -55,9 +53,7 @@ export default function AdminEnrollments() {
   const stats = useMemo(() => {
     const total = enrollments.length;
     const paid = enrollments.filter((e) => e.paymentStatus === "paid").length;
-    const pending = enrollments.filter(
-      (e) => e.paymentStatus === "unpaid",
-    ).length;
+    const pending = enrollments.filter((e) => e.paymentStatus === "unpaid").length;
     const revenue = enrollments
       .filter((e) => e.paymentStatus === "paid")
       .reduce((sum, e) => sum + Number(e.amount || 0), 0);
@@ -83,27 +79,21 @@ export default function AdminEnrollments() {
             Admin Classes
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight">
-            Class Enrollments
-          </h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight">Class Enrollments</h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-            Track every customer enrolled in GlowSuite classes, monitor payment
-            status, and review class demand from one clean dashboard.
+            Track every customer enrolled in GlowSuite classes, monitor payment status,
+            and review class demand from one clean dashboard.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-4">
             <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-                Total
-              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Total</p>
               <p className="mt-2 text-3xl font-bold">{stats.total}</p>
             </div>
 
             <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-                Paid
-              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Paid</p>
               <p className="mt-2 text-3xl font-bold">{stats.paid}</p>
             </div>
 
@@ -125,9 +115,7 @@ export default function AdminEnrollments() {
 
         <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200">
           <div className="border-b border-zinc-200 px-6 py-5">
-            <h2 className="text-xl font-bold text-zinc-900">
-              Enrollment Records
-            </h2>
+            <h2 className="text-xl font-bold text-zinc-900">Enrollment Records</h2>
             <p className="mt-1 text-sm text-zinc-500">
               Customer, class, payment, and enrollment status.
             </p>
@@ -169,9 +157,7 @@ export default function AdminEnrollments() {
 
                     <td className="px-6 py-5 text-zinc-600">
                       <p>{formatDate(item.classItem.date)}</p>
-                      <p className="mt-1 text-xs">
-                        {item.classItem.time || "—"}
-                      </p>
+                      <p className="mt-1 text-xs">{item.classItem.time || "—"}</p>
                     </td>
 
                     <td className="px-6 py-5">
@@ -195,8 +181,7 @@ export default function AdminEnrollments() {
                         No valid class enrollments yet
                       </p>
                       <p className="mt-2 text-sm text-zinc-500">
-                        Broken records with missing customer or class are
-                        hidden.
+                        Broken records with missing customer or class are hidden.
                       </p>
                     </td>
                   </tr>

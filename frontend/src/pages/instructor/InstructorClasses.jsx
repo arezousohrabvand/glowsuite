@@ -47,9 +47,7 @@ export default function InstructorClasses() {
                 {item.category || "Class"}
               </span>
 
-              <h2 className="mt-4 text-lg font-semibold text-zinc-900">
-                {item.title}
-              </h2>
+              <h2 className="mt-4 text-lg font-semibold text-zinc-900">{item.title}</h2>
 
               <p className="mt-2 text-sm text-zinc-500">{item.description}</p>
 
@@ -61,8 +59,7 @@ export default function InstructorClasses() {
                   <b>Time:</b> {item.time}
                 </p>
                 <p>
-                  <b>Capacity:</b> {item.enrolledCount || 0}/
-                  {item.capacity || 0}
+                  <b>Capacity:</b> {item.enrolledCount || 0}/{item.capacity || 0}
                 </p>
                 <p>
                   <b>Price:</b> ${item.price || 0}
@@ -70,9 +67,7 @@ export default function InstructorClasses() {
               </div>
 
               <div className="mt-6 rounded-2xl bg-stone-50 p-4">
-                <p className="text-sm font-medium text-zinc-900">
-                  Enrolled Students
-                </p>
+                <p className="text-sm font-medium text-zinc-900">Enrolled Students</p>
 
                 <div className="mt-3 space-y-2">
                   {item.students?.length > 0 ? (
@@ -88,9 +83,7 @@ export default function InstructorClasses() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-zinc-500">
-                      No students enrolled yet.
-                    </p>
+                    <p className="text-sm text-zinc-500">No students enrolled yet.</p>
                   )}
                 </div>
               </div>

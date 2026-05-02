@@ -1,10 +1,6 @@
-import Service from "../mongoose/service.model.js";
+import Service from "../mongoose/ServiceModel.js";
 
 export const serviceRepository = {
-  create(data) {
-    return Service.create(data);
-  },
-
   findAll() {
     return Service.find().sort({ createdAt: -1 });
   },
@@ -13,14 +9,18 @@ export const serviceRepository = {
     return Service.findById(id);
   },
 
-  updateById(id, data) {
+  create(data) {
+    return Service.create(data);
+  },
+
+  update(id, data) {
     return Service.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     });
   },
 
-  deleteById(id) {
+  delete(id) {
     return Service.findByIdAndDelete(id);
   },
 };

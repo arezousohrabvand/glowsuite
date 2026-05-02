@@ -4,6 +4,10 @@ import {
   getAdminBillingHistory,
   refundBilling,
 } from "../../api/billingApi";
+const [page, setPage] = useState(1);
+const [pagination, setPagination] = useState({});
+
+const [bills, setBills] = useState([]);
 
 function formatMoney(value, currency = "usd") {
   return new Intl.NumberFormat("en-US", {
@@ -43,8 +47,10 @@ export default function AdminBilling() {
       setLoading(true);
       setError("");
 
-      const data = await getAdminBillingHistory();
-      setBills(Array.isArray(data) ? data : []);
+      const res = await getAdminBillingHistory({ page });
+
+      setBills(res.data || []);
+      setPagination(res.pagination || {});
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to load admin billing");
     } finally {
@@ -54,7 +60,7 @@ export default function AdminBilling() {
 
   useEffect(() => {
     loadBills();
-  }, []);
+  }, [page]);
 
   const stats = useMemo(() => {
     const revenue = bills.reduce(
@@ -81,9 +87,7 @@ export default function AdminBilling() {
     }
 
     const refundInfo = refundState[bill._id] || {};
-    const refundAmount = Number(
-      refundInfo.amount || bill.total || bill.amount || 0,
-    );
+    const refundAmount = Number(refundInfo.amount || bill.total || bill.amount || 0);
     const reason = refundInfo.reason || "Admin refund";
 
     if (!refundAmount || refundAmount <= 0) {
@@ -174,18 +178,14 @@ export default function AdminBilling() {
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Revenue
               </p>
-              <p className="mt-2 text-3xl font-bold">
-                {formatMoney(stats.revenue)}
-              </p>
+              <p className="mt-2 text-3xl font-bold">{formatMoney(stats.revenue)}</p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200 p-5">
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Refunded
               </p>
-              <p className="mt-2 text-3xl font-bold">
-                {formatMoney(stats.refunded)}
-              </p>
+              <p className="mt-2 text-3xl font-bold">{formatMoney(stats.refunded)}</p>
             </div>
           </div>
         </div>
@@ -303,13 +303,9 @@ export default function AdminBilling() {
                         {bill.title || bill.description || "Billing record"}
                       </td>
 
-                      <td className="px-6 py-4 capitalize">
-                        {bill.type || "booking"}
-                      </td>
+                      <td className="px-6 py-4 capitalize">{bill.type || "booking"}</td>
 
-                      <td className="px-6 py-4">
-                        {formatDate(bill.createdAt)}
-                      </td>
+                      <td className="px-6 py-4">{formatDate(bill.createdAt)}</td>
 
                       <td className="px-6 py-4">
                         {formatMoney(bill.total || bill.amount, bill.currency)}
@@ -346,9 +342,7 @@ export default function AdminBilling() {
                             placeholder="Refund amount"
                             value={
                               refundState[bill._id]?.amount ||
-                              (refundable
-                                ? Number(bill.total || bill.amount || 0)
-                                : "")
+                              (refundable ? Number(bill.total || bill.amount || 0) : "")
                             }
                             onChange={(e) =>
                               setRefundState((prev) => ({
@@ -404,13 +398,54 @@ export default function AdminBilling() {
             </table>
 
             {!bills.length && (
-              <div className="p-6 text-zinc-500">
-                No billing records available.
-              </div>
+              <div className="p-6 text-zinc-500">No billing records available.</div>
             )}
+            <PaginationControls page={page} pagination={pagination} setPage={setPage} />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PaginationControls({ page, pagination, setPage }) {
+  const totalPages = pagination?.pages || 1;
+
+  return (
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+      <button
+        disabled={page <= 1}
+        onClick={() => setPage((p) => Math.max(1, p - 1))}
+        className="rounded-full border px-4 py-2 text-sm disabled:opacity-40"
+      >
+        Prev
+      </button>
+
+      {Array.from({ length: totalPages }).map((_, index) => {
+        const pageNumber = index + 1;
+
+        return (
+          <button
+            key={pageNumber}
+            onClick={() => setPage(pageNumber)}
+            className={`rounded-full border px-4 py-2 text-sm ${
+              page === pageNumber
+                ? "bg-slate-900 text-white"
+                : "bg-white text-slate-700"
+            }`}
+          >
+            {pageNumber}
+          </button>
+        );
+      })}
+
+      <button
+        disabled={page >= totalPages}
+        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+        className="rounded-full border px-4 py-2 text-sm disabled:opacity-40"
+      >
+        Next
+      </button>
     </div>
   );
 }

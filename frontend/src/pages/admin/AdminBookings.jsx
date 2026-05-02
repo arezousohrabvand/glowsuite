@@ -145,8 +145,7 @@ export default function AdminBookings() {
 
                 const canApprove = normalizedStatus === "pending";
                 const canCancel =
-                  normalizedStatus === "pending" ||
-                  normalizedStatus === "upcoming";
+                  normalizedStatus === "pending" || normalizedStatus === "upcoming";
 
                 return (
                   <tr key={booking._id} className="border-t border-zinc-200">
@@ -170,9 +169,7 @@ export default function AdminBookings() {
                       <div className="flex flex-wrap gap-2">
                         {canApprove && (
                           <button
-                            onClick={() =>
-                              handleStatusChange(booking._id, "Confirmed")
-                            }
+                            onClick={() => handleStatusChange(booking._id, "Confirmed")}
                             disabled={isUpdating}
                             className="rounded bg-emerald-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
                           >
@@ -182,9 +179,7 @@ export default function AdminBookings() {
 
                         {canCancel && (
                           <button
-                            onClick={() =>
-                              handleStatusChange(booking._id, "Cancelled")
-                            }
+                            onClick={() => handleStatusChange(booking._id, "Cancelled")}
                             disabled={isUpdating}
                             className="rounded bg-red-600 px-3 py-1 text-white disabled:cursor-not-allowed disabled:opacity-40"
                           >
@@ -199,10 +194,7 @@ export default function AdminBookings() {
 
               {bookings.length === 0 && (
                 <tr>
-                  <td
-                    colSpan="7"
-                    className="px-4 py-6 text-center text-zinc-500"
-                  >
+                  <td colSpan="7" className="px-4 py-6 text-center text-zinc-500">
                     No bookings found
                   </td>
                 </tr>

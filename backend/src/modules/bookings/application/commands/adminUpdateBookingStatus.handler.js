@@ -3,17 +3,13 @@ import { mapBookingToResponse } from "../../contracts/booking.mapper.js";
 import { createOutboxEvent } from "../../../../shared/utils/createOutboxEvent.js";
 
 const getCustomerName = (user) =>
-  `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-  "GlowSuite customer";
+  `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "GlowSuite customer";
 
 const getStylistName = (booking) =>
   booking.stylistName ||
   `${booking.stylist?.firstName || ""} ${booking.stylist?.lastName || ""}`.trim();
 
-export const adminUpdateBookingStatusHandler = async ({
-  bookingId,
-  status,
-}) => {
+export const adminUpdateBookingStatusHandler = async ({ bookingId, status }) => {
   const booking = await bookingRepository.findByIdWithDetails(bookingId);
 
   if (!booking) {

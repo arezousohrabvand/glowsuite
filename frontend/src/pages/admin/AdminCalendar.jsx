@@ -22,9 +22,7 @@ function StatusBadge({ value }) {
         : "bg-zinc-50 text-zinc-700 ring-zinc-100";
 
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}
-    >
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}>
       {value || "Unknown"}
     </span>
   );
@@ -55,9 +53,7 @@ export default function AdminCalendar() {
 
   const bookings = useMemo(() => {
     return (calendarData?.bookings || []).filter((booking) => {
-      const validStatus = ["Pending", "Upcoming", "Confirmed"].includes(
-        booking.status,
-      );
+      const validStatus = ["Pending", "Upcoming", "Confirmed"].includes(booking.status);
 
       const hasCustomer = Boolean(booking.user);
 
@@ -89,11 +85,7 @@ export default function AdminCalendar() {
   };
 
   const calendarView =
-    view === "day"
-      ? "timeGridDay"
-      : view === "week"
-        ? "timeGridWeek"
-        : "dayGridMonth";
+    view === "day" ? "timeGridDay" : view === "week" ? "timeGridWeek" : "dayGridMonth";
 
   return (
     <div className="min-h-screen bg-zinc-50 p-6">
@@ -105,12 +97,10 @@ export default function AdminCalendar() {
 
           <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">
-                Admin Calendar
-              </h1>
+              <h1 className="text-4xl font-bold tracking-tight">Admin Calendar</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-                See pending and upcoming appointments in a real calendar view,
-                plus a detailed appointment list.
+                See pending and upcoming appointments in a real calendar view, plus a
+                detailed appointment list.
               </p>
             </div>
 
@@ -142,9 +132,7 @@ export default function AdminCalendar() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-                Active
-              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Active</p>
               <p className="mt-2 text-3xl font-bold">{stats.total}</p>
             </div>
 
@@ -173,9 +161,7 @@ export default function AdminCalendar() {
             <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
               <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-zinc-900">
-                    Calendar View
-                  </h2>
+                  <h2 className="text-xl font-bold text-zinc-900">Calendar View</h2>
                   <p className="mt-1 text-sm text-zinc-500">
                     {formatDate(calendarData?.startDate)} —{" "}
                     {formatDate(calendarData?.endDate)}

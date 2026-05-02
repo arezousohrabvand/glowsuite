@@ -18,23 +18,22 @@ export const getStylistDashboard = async (req, res) => {
     const now = new Date();
     const { start, end } = getDayRange();
 
-    const [todayBookings, upcomingBookings, completedBookings] =
-      await Promise.all([
-        Booking.countDocuments({
-          stylist: stylistId,
-          slotStart: { $gte: start, $lte: end },
-          status: { $nin: ["Cancelled"] },
-        }),
-        Booking.countDocuments({
-          stylist: stylistId,
-          slotStart: { $gte: now },
-          status: { $nin: ["Cancelled", "Completed"] },
-        }),
-        Booking.countDocuments({
-          stylist: stylistId,
-          status: "Completed",
-        }),
-      ]);
+    const [todayBookings, upcomingBookings, completedBookings] = await Promise.all([
+      Booking.countDocuments({
+        stylist: stylistId,
+        slotStart: { $gte: start, $lte: end },
+        status: { $nin: ["Cancelled"] },
+      }),
+      Booking.countDocuments({
+        stylist: stylistId,
+        slotStart: { $gte: now },
+        status: { $nin: ["Cancelled", "Completed"] },
+      }),
+      Booking.countDocuments({
+        stylist: stylistId,
+        status: "Completed",
+      }),
+    ]);
 
     res.json({
       todayBookings,
@@ -269,10 +268,7 @@ export const rescheduleStylistBooking = async (req, res) => {
   const newSlotStart = new Date(slotStart);
   const newSlotEnd = new Date(slotEnd);
 
-  if (
-    Number.isNaN(newSlotStart.getTime()) ||
-    Number.isNaN(newSlotEnd.getTime())
-  ) {
+  if (Number.isNaN(newSlotStart.getTime()) || Number.isNaN(newSlotEnd.getTime())) {
     return res.status(400).json({
       message: "Invalid slotStart or slotEnd",
     });

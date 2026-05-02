@@ -1,9 +1,4 @@
-export const SLOT_HOLD_STATUSES = [
-  "active",
-  "expired",
-  "released",
-  "converted",
-];
+export const SLOT_HOLD_STATUSES = ["active", "expired", "released", "converted"];
 
 export const validateCreateSlotHoldInput = ({
   serviceName,

@@ -75,9 +75,7 @@ export default function AdminServices() {
   }
 
   async function handleDelete(serviceId) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this service?",
-    );
+    const confirmed = window.confirm("Are you sure you want to delete this service?");
     if (!confirmed) return;
 
     try {
@@ -142,10 +140,7 @@ export default function AdminServices() {
         />
 
         <div className="md:col-span-2 flex gap-3">
-          <button
-            type="submit"
-            className="rounded-lg bg-black px-5 py-3 text-white"
-          >
+          <button type="submit" className="rounded-lg bg-black px-5 py-3 text-white">
             {editingId ? "Update Service" : "Create Service"}
           </button>
 

@@ -5,7 +5,9 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "format": "prettier --write \"src/**/*.{js,cjs,mjs}\"",
+    "format:check": "prettier --check \"src/**/*.{js,cjs,mjs}\""
   },
   "dependencies": {
     "axios": "^1.15.0",
@@ -30,6 +32,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "prettier": "^3.5.3"
   }
 }

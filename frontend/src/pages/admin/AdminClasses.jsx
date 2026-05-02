@@ -41,9 +41,7 @@ function StatusBadge({ value }) {
         : "bg-emerald-50 text-emerald-700 ring-emerald-100";
 
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}
-    >
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${styles}`}>
       {value}
     </span>
   );
@@ -174,10 +172,7 @@ export default function AdminClasses() {
 
   const stats = useMemo(() => {
     const total = classes.length;
-    const seats = classes.reduce(
-      (sum, item) => sum + Number(item.capacity || 0),
-      0,
-    );
+    const seats = classes.reduce((sum, item) => sum + Number(item.capacity || 0), 0);
     const enrolled = classes.reduce(
       (sum, item) => sum + Number(item.enrolledCount || 0),
       0,
@@ -204,8 +199,8 @@ export default function AdminClasses() {
                 Manage Salon Classes
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-                Create workshops, update class schedules, track seats, view
-                enrollments, and manage class availability from one dashboard.
+                Create workshops, update class schedules, track seats, view enrollments,
+                and manage class availability from one dashboard.
               </p>
             </div>
 
@@ -235,9 +230,7 @@ export default function AdminClasses() {
                 <p className="text-xs uppercase tracking-[0.2em] text-white/50">
                   Potential
                 </p>
-                <p className="mt-2 text-3xl font-bold">
-                  ${stats.revenuePotential}
-                </p>
+                <p className="mt-2 text-3xl font-bold">${stats.revenuePotential}</p>
               </div>
             </div>
           </div>
@@ -441,9 +434,7 @@ export default function AdminClasses() {
 
             {!loading && filteredClasses.length === 0 && (
               <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-zinc-200">
-                <p className="text-lg font-semibold text-zinc-900">
-                  No classes found
-                </p>
+                <p className="text-lg font-semibold text-zinc-900">No classes found</p>
                 <p className="mt-2 text-sm text-zinc-500">
                   Create your first class or change your search.
                 </p>

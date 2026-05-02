@@ -55,10 +55,7 @@ export default function AdminCustomers() {
   }
 
   const stats = useMemo(() => {
-    const totalSpend = customers.reduce(
-      (sum, c) => sum + Number(c.totalSpend || 0),
-      0,
-    );
+    const totalSpend = customers.reduce((sum, c) => sum + Number(c.totalSpend || 0), 0);
 
     const totalBookings = customers.reduce(
       (sum, c) => sum + Number(c.totalBookings || 0),
@@ -86,8 +83,8 @@ export default function AdminCustomers() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-            View customer activity, bookings, and lifetime value from a clean
-            CRM-style dashboard.
+            View customer activity, bookings, and lifetime value from a clean CRM-style
+            dashboard.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-4">
@@ -109,27 +106,20 @@ export default function AdminCustomers() {
               <p className="text-xs uppercase tracking-[0.2em] text-white/50">
                 Total Spend
               </p>
-              <p className="mt-2 text-3xl font-bold">
-                {formatMoney(stats.totalSpend)}
-              </p>
+              <p className="mt-2 text-3xl font-bold">{formatMoney(stats.totalSpend)}</p>
             </div>
 
             <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
               <p className="text-xs uppercase tracking-[0.2em] text-white/50">
                 Avg Spend
               </p>
-              <p className="mt-2 text-3xl font-bold">
-                {formatMoney(stats.avgSpend)}
-              </p>
+              <p className="mt-2 text-3xl font-bold">{formatMoney(stats.avgSpend)}</p>
             </div>
           </div>
         </section>
 
         <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-          <form
-            onSubmit={handleSearch}
-            className="grid gap-3 md:grid-cols-[1fr_140px]"
-          >
+          <form onSubmit={handleSearch} className="grid gap-3 md:grid-cols-[1fr_140px]">
             <input
               type="text"
               placeholder="Search customer by name or email..."
@@ -150,9 +140,7 @@ export default function AdminCustomers() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
           <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200">
             <div className="border-b border-zinc-200 px-6 py-5">
-              <h2 className="text-xl font-bold text-zinc-900">
-                Customer Directory
-              </h2>
+              <h2 className="text-xl font-bold text-zinc-900">Customer Directory</h2>
               <p className="mt-1 text-sm text-zinc-500">
                 {customers.length} customers found
               </p>
@@ -220,17 +208,13 @@ export default function AdminCustomers() {
           </section>
 
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-sm ring-1 ring-zinc-200">
-            <h2 className="text-xl font-bold text-zinc-900">
-              Customer Details
-            </h2>
+            <h2 className="text-xl font-bold text-zinc-900">Customer Details</h2>
             <p className="mt-1 text-sm text-zinc-500">
               Select a customer to review profile and booking history.
             </p>
 
             {detailLoading ? (
-              <p className="mt-6 text-sm text-zinc-500">
-                Loading customer details...
-              </p>
+              <p className="mt-6 text-sm text-zinc-500">Loading customer details...</p>
             ) : !selectedCustomer ? (
               <div className="mt-6 rounded-2xl bg-zinc-50 p-5 text-sm text-zinc-500">
                 No customer selected.
@@ -274,9 +258,7 @@ export default function AdminCustomers() {
                 </div>
 
                 <div>
-                  <h3 className="mb-3 font-bold text-zinc-900">
-                    Booking History
-                  </h3>
+                  <h3 className="mb-3 font-bold text-zinc-900">Booking History</h3>
 
                   <div className="max-h-[420px] space-y-3 overflow-y-auto pr-1">
                     {selectedCustomer.bookings?.map((booking) => (
@@ -285,9 +267,7 @@ export default function AdminCustomers() {
                         className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4"
                       >
                         <p className="font-semibold text-zinc-900">
-                          {booking.service?.name ||
-                            booking.serviceName ||
-                            "Service"}
+                          {booking.service?.name || booking.serviceName || "Service"}
                         </p>
 
                         <p className="mt-1 text-sm text-zinc-600">

@@ -2,18 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 function getToken() {
   const rawUserInfo = localStorage.getItem("userInfo");
   const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
   return (
-    localStorage.getItem("token") ||
-    userInfo?.token ||
-    userInfo?.accessToken ||
-    ""
+    localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken || ""
   );
 }
 
@@ -44,98 +40,18 @@ export default function PaymentSuccess() {
           return;
         }
 
-        if (typeParam === "booking") {
-          const res = await axios.get(
-            `${API_BASE_URL}/bookings/payment-success`,
-            {
-              params: { session_id: sessionId },
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
+        const res = await axios.get(`${API_BASE_URL}/payments/verify/${sessionId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-          setSessionInfo(res.data);
-          setPaymentType("booking");
+        setSessionInfo(res.data);
+        setPaymentType(typeParam || "booking");
 
-          setTimeout(() => {
-            navigate("/my-bookings");
-          }, 1800);
-
-          return;
-        }
-
-        if (typeParam === "enrollment") {
-          const res = await axios.get(
-            `${API_BASE_URL}/enrollments/payment-success`,
-            {
-              params: { session_id: sessionId },
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
-
-          setSessionInfo(res.data);
-          setPaymentType("enrollment");
-
-          setTimeout(() => {
-            navigate("/my-classes");
-          }, 1800);
-
-          return;
-        }
-
-        try {
-          const enrollmentRes = await axios.get(
-            `${API_BASE_URL}/enrollments/payment-success`,
-            {
-              params: { session_id: sessionId },
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
-
-          setSessionInfo(enrollmentRes.data);
-          setPaymentType("enrollment");
-
-          setTimeout(() => {
-            navigate("/my-classes");
-          }, 1800);
-
-          return;
-        } catch (enrollmentErr) {
-          const enrollmentMessage =
-            enrollmentErr?.response?.data?.message || "";
-
-          if (
-            enrollmentErr?.response?.status === 404 ||
-            enrollmentErr?.response?.status === 400 ||
-            enrollmentMessage.toLowerCase().includes("enrollment")
-          ) {
-            const bookingRes = await axios.get(
-              `${API_BASE_URL}/bookings/payment-success`,
-              {
-                params: { session_id: sessionId },
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              },
-            );
-
-            setSessionInfo(bookingRes.data);
-            setPaymentType("booking");
-
-            setTimeout(() => {
-              navigate("/my-bookings");
-            }, 1800);
-
-            return;
-          }
-
-          throw enrollmentErr;
-        }
+        setTimeout(() => {
+          navigate(typeParam === "enrollment" ? "/my-classes" : "/my-bookings");
+        }, 1800);
       } catch (err) {
         setError(err?.response?.data?.message || "Failed to confirm payment");
       } finally {
@@ -184,9 +100,7 @@ export default function PaymentSuccess() {
             Stripe confirmed your salon booking payment successfully.
           </p>
 
-          <p className="mt-2 text-sm text-zinc-500">
-            Redirecting to your bookings...
-          </p>
+          <p className="mt-2 text-sm text-zinc-500">Redirecting to your bookings...</p>
 
           <div className="mt-8 rounded-3xl border border-zinc-200 bg-zinc-50 p-5">
             <div className="grid gap-4 md:grid-cols-2">
@@ -228,7 +142,7 @@ export default function PaymentSuccess() {
     );
   }
 
-  const enrollment = sessionInfo?.enrollment;
+  const enrollment = sessionInfo?.billing?.enrollment || sessionInfo?.enrollment;
   const classItem = enrollment?.classItem;
 
   return (
@@ -250,36 +164,21 @@ export default function PaymentSuccess() {
           Stripe confirmed your class payment successfully.
         </p>
 
-        <p className="mt-2 text-sm text-zinc-500">
-          Redirecting to your classes...
-        </p>
+        <p className="mt-2 text-sm text-zinc-500">Redirecting to your classes...</p>
 
         <div className="mt-8 rounded-3xl border border-zinc-200 bg-zinc-50 p-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-                Enrollment Status
+                Payment Status
               </p>
-              <p className="mt-2 text-lg font-semibold text-zinc-900">
-                {enrollment?.paymentStatus || "paid"}
-              </p>
+              <p className="mt-2 text-lg font-semibold text-zinc-900">paid</p>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-                Class
-              </p>
+              <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Class</p>
               <p className="mt-2 text-lg font-semibold text-zinc-900">
                 {classItem?.title || "GlowSuite Class"}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-                Amount
-              </p>
-              <p className="mt-2 text-lg font-semibold text-zinc-900">
-                ${Number(enrollment?.amount || 0).toFixed(2)}
               </p>
             </div>
 
@@ -288,7 +187,7 @@ export default function PaymentSuccess() {
                 Session
               </p>
               <p className="mt-2 break-all text-sm font-medium text-zinc-900">
-                {enrollment?.stripeSessionId || sessionId}
+                {sessionId}
               </p>
             </div>
           </div>

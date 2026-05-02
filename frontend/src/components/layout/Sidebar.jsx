@@ -45,9 +45,7 @@ export default function Sidebar() {
     "Glow Member";
 
   const initial =
-    user?.firstName?.[0]?.toUpperCase() ||
-    user?.fullName?.[0]?.toUpperCase() ||
-    "G";
+    user?.firstName?.[0]?.toUpperCase() || user?.fullName?.[0]?.toUpperCase() || "G";
 
   const handleLogout = () => {
     logout();

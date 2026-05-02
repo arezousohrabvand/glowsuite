@@ -4,8 +4,7 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { socket } from "../socket";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 const categories = [
   "All",
@@ -176,8 +175,8 @@ export default function Classes() {
 
         <h1 className="text-4xl font-bold">Salon Classes</h1>
         <p className="mt-3 max-w-2xl text-zinc-600">
-          Learn premium salon skills from expert instructors, explore featured
-          sessions, and reserve your spot in our latest classes.
+          Learn premium salon skills from expert instructors, explore featured sessions,
+          and reserve your spot in our latest classes.
         </p>
       </section>
 
@@ -223,9 +222,7 @@ export default function Classes() {
         </section>
       ) : (
         <section className="mx-auto max-w-7xl px-6 py-10">
-          <h2 className="mb-6 text-2xl font-bold">
-            {filteredClasses.length} Classes
-          </h2>
+          <h2 className="mb-6 text-2xl font-bold">{filteredClasses.length} Classes</h2>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredClasses.map((item) => {
@@ -270,9 +267,7 @@ export default function Classes() {
 
                   <div className="mt-3 text-sm">
                     {seatsLeft <= 0 ? (
-                      <span className="font-semibold text-red-600">
-                        Sold out
-                      </span>
+                      <span className="font-semibold text-red-600">Sold out</span>
                     ) : seatsLeft <= 3 ? (
                       <span className="font-semibold text-amber-600">
                         Only {seatsLeft} seats left
@@ -285,9 +280,7 @@ export default function Classes() {
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-bold">
-                      ${item.price || 0}
-                    </span>
+                    <span className="text-lg font-bold">${item.price || 0}</span>
 
                     <Link
                       to={`/classes/${item._id}`}

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import User from "../models/User.js";
+import User from "../modules/users/infrastructure/mongoose/UserModel.js";
 
 dotenv.config();
 
@@ -66,9 +66,7 @@ async function seedStylists() {
         existing.role = "stylist";
         existing.image = stylist.image;
         await existing.save();
-        console.log(
-          `Updated stylist: ${stylist.firstName} ${stylist.lastName}`,
-        );
+        console.log(`Updated stylist: ${stylist.firstName} ${stylist.lastName}`);
       } else {
         const hashedPassword = await bcrypt.hash(stylist.password, 10);
 
@@ -77,9 +75,7 @@ async function seedStylists() {
           password: hashedPassword,
         });
 
-        console.log(
-          `Created stylist: ${stylist.firstName} ${stylist.lastName}`,
-        );
+        console.log(`Created stylist: ${stylist.firstName} ${stylist.lastName}`);
       }
     }
 

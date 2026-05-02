@@ -28,9 +28,7 @@ export default function StylistDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-8 text-zinc-500">Loading stylist dashboard...</div>
-    );
+    return <div className="p-8 text-zinc-500">Loading stylist dashboard...</div>;
   }
 
   return (
@@ -46,11 +44,7 @@ export default function StylistDashboard() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-4">
-        <StatCard
-          title="Today"
-          value={data.todayBookings}
-          subtitle="Bookings today"
-        />
+        <StatCard title="Today" value={data.todayBookings} subtitle="Bookings today" />
         <StatCard
           title="Upcoming"
           value={data.upcomingBookings}
@@ -71,12 +65,8 @@ export default function StylistDashboard() {
       <div className="mt-8 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">
-              Recent Bookings
-            </h2>
-            <p className="text-sm text-zinc-500">
-              Your latest assigned appointments.
-            </p>
+            <h2 className="text-lg font-semibold text-zinc-900">Recent Bookings</h2>
+            <p className="text-sm text-zinc-500">Your latest assigned appointments.</p>
           </div>
         </div>
 

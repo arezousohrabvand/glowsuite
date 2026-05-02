@@ -17,9 +17,7 @@ export const bookingRepository = {
   },
 
   async findMyBookings(userId) {
-    return Booking.find({ user: userId })
-      .populate("service")
-      .sort({ createdAt: -1 });
+    return Booking.find({ user: userId }).populate("service").sort({ createdAt: -1 });
   },
 
   async findAdminBookings(filters = {}) {
@@ -37,12 +35,7 @@ export const bookingRepository = {
       .sort({ slotStart: -1 });
   },
 
-  async findConflict({
-    stylistId,
-    slotStart,
-    slotEnd,
-    excludeBookingId = null,
-  }) {
+  async findConflict({ stylistId, slotStart, slotEnd, excludeBookingId = null }) {
     const query = {
       stylist: stylistId,
       status: { $in: ["Pending", "Upcoming", "Confirmed"] },

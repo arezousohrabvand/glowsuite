@@ -1,7 +1,6 @@
 export function getCustomerName(user) {
   return (
-    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-    "GlowSuite customer"
+    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "GlowSuite customer"
   );
 }
 

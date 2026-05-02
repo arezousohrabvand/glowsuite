@@ -18,12 +18,7 @@ export const updateUserProfileById = async (userId, updateData) => {
   });
 };
 
-export const findUsersForAdmin = async ({
-  page = 1,
-  limit = 10,
-  role,
-  search,
-}) => {
+export const findUsersForAdmin = async ({ page = 1, limit = 10, role, search }) => {
   const query = {};
 
   if (role) {

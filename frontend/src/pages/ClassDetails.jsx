@@ -3,15 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { socket } from "../socket";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 function InfoCard({ label, value }) {
   return (
     <div className="rounded-2xl bg-zinc-50 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-2 text-sm font-semibold text-zinc-900">{value}</p>
     </div>
   );
@@ -86,9 +83,7 @@ export default function ClassDetails() {
       const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
       const token =
-        localStorage.getItem("token") ||
-        userInfo?.token ||
-        userInfo?.accessToken;
+        localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken;
 
       if (!token) {
         alert("Please log in first");
@@ -218,14 +213,8 @@ export default function ClassDetails() {
                 <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <InfoCard label="Date" value={classItem.date || "TBA"} />
                   <InfoCard label="Time" value={classItem.time || "TBA"} />
-                  <InfoCard
-                    label="Duration"
-                    value={classItem.duration || "TBA"}
-                  />
-                  <InfoCard
-                    label="Price"
-                    value={`$${Number(classItem.price || 0)}`}
-                  />
+                  <InfoCard label="Duration" value={classItem.duration || "TBA"} />
+                  <InfoCard label="Price" value={`$${Number(classItem.price || 0)}`} />
                 </div>
               </div>
             </div>
@@ -287,9 +276,7 @@ export default function ClassDetails() {
               <div className="mt-6 space-y-4">
                 <InfoCard
                   label="Instructor"
-                  value={
-                    classItem.instructorName || classItem.instructor || "TBA"
-                  }
+                  value={classItem.instructorName || classItem.instructor || "TBA"}
                 />
                 <InfoCard
                   label="Seat Availability"

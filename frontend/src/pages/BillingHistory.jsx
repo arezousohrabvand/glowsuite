@@ -22,9 +22,7 @@ function statusBadge(status) {
 function SummaryCard({ label, value }) {
   return (
     <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-2 text-2xl font-bold text-zinc-900">{value}</p>
     </div>
   );
@@ -45,25 +43,18 @@ export default function BillingHistory() {
         const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
         const token =
-          localStorage.getItem("token") ||
-          userInfo?.token ||
-          userInfo?.accessToken;
+          localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken;
 
-        const res = await axios.get(
-          "http://localhost:5000/api/billing/my-history",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const res = await axios.get("http://localhost:5000/api/billing/my-history", {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         setBills(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Billing fetch error:", err);
-        setError(
-          err.response?.data?.message || "Failed to load billing history",
-        );
+        setError(err.response?.data?.message || "Failed to load billing history");
       } finally {
         setLoading(false);
       }
@@ -136,9 +127,7 @@ export default function BillingHistory() {
 
         {bills.length === 0 ? (
           <div className="rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
-            <h2 className="text-xl font-semibold text-zinc-900">
-              No invoices yet
-            </h2>
+            <h2 className="text-xl font-semibold text-zinc-900">No invoices yet</h2>
             <p className="mt-2 text-zinc-600">
               Once you complete a booking or class payment, it will show here.
             </p>
@@ -238,9 +227,7 @@ export default function BillingHistory() {
                     </p>
                     <div className="mt-2 space-y-1 text-sm text-zinc-700">
                       <p>Session: {bill.stripeSessionId || "N/A"}</p>
-                      <p>
-                        Payment Intent: {bill.stripePaymentIntentId || "N/A"}
-                      </p>
+                      <p>Payment Intent: {bill.stripePaymentIntentId || "N/A"}</p>
                     </div>
                   </div>
                 </div>

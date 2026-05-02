@@ -2,10 +2,7 @@ import asyncHandler from "express-async-handler";
 import generateToken from "../../../shared/utils/generateToken.js";
 
 import { registerUserDto, loginUserDto } from "../contracts/auth.dto.js";
-import {
-  validateRegisterInput,
-  validateLoginInput,
-} from "../contracts/auth.schema.js";
+import { validateRegisterInput, validateLoginInput } from "../contracts/auth.schema.js";
 import { registerUserHandler } from "../application/commands/registerUser.handler.js";
 import { loginUserHandler } from "../application/commands/loginUser.handler.js";
 import { getCurrentUserHandler } from "../application/queries/getCurrentUser.handler.js";

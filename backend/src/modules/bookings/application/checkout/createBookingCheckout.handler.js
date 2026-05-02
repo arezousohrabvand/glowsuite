@@ -52,9 +52,7 @@ export const createBookingCheckoutHandler = async ({ user, data }) => {
   const finalTime = hold.time || data.time;
 
   if (!finalServiceName || !finalStylistName || !finalDate || !finalTime) {
-    const error = new Error(
-      "serviceName, stylistName, date, and time are required",
-    );
+    const error = new Error("serviceName, stylistName, date, and time are required");
     error.statusCode = 400;
     throw error;
   }
@@ -79,11 +77,7 @@ export const createBookingCheckoutHandler = async ({ user, data }) => {
     service.durationMinutes || service.duration || 60,
   );
 
-  const { slotStart, slotEnd } = buildSlotDates(
-    finalDate,
-    finalTime,
-    durationMinutes,
-  );
+  const { slotStart, slotEnd } = buildSlotDates(finalDate, finalTime, durationMinutes);
 
   const existingBooking = await bookingRepository.findConflict({
     stylistId: stylistUser._id,

@@ -3,8 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { servicesData } from "../data/servicesData";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 function normalizeService(service) {
   return {
@@ -33,9 +32,7 @@ function normalizeService(service) {
     image:
       service.image ||
       "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1200&q=80",
-    features: service.features?.length
-      ? service.features
-      : ["Consultation included"],
+    features: service.features?.length ? service.features : ["Consultation included"],
     benefits: service.benefits?.length
       ? service.benefits
       : ["Personalized service", "Professional salon care", "Polished finish"],
@@ -63,9 +60,7 @@ function findService(list, id) {
 function InfoCard({ label, value }) {
   return (
     <div className="rounded-2xl bg-zinc-50 p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-2 text-sm font-semibold text-zinc-900">{value}</p>
     </div>
   );
@@ -230,10 +225,7 @@ export default function ServiceDetails() {
               <div className="mt-6 space-y-4">
                 <InfoCard label="Service" value={service.name} />
                 <InfoCard label="Best with" value={service.stylist} />
-                <InfoCard
-                  label="Experience"
-                  value={service.stylistExperience}
-                />
+                <InfoCard label="Experience" value={service.stylistExperience} />
               </div>
             </div>
           </div>
@@ -247,15 +239,11 @@ export default function ServiceDetails() {
               Stylist Profile
             </p>
 
-            <h2 className="mt-6 text-2xl font-bold text-zinc-900">
-              {service.stylist}
-            </h2>
+            <h2 className="mt-6 text-2xl font-bold text-zinc-900">{service.stylist}</h2>
             <p className="mt-1 text-sm font-medium text-zinc-600">
               {service.stylistRole}
             </p>
-            <p className="mt-1 text-sm text-zinc-500">
-              {service.stylistExperience}
-            </p>
+            <p className="mt-1 text-sm text-zinc-500">{service.stylistExperience}</p>
           </div>
 
           <div className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-sm">
@@ -279,9 +267,7 @@ export default function ServiceDetails() {
 
       {relatedServices.length > 0 && (
         <section className="mx-auto max-w-7xl px-6 pb-8 md:px-10 lg:px-12">
-          <h2 className="mb-8 text-3xl font-bold">
-            More in {service.category}
-          </h2>
+          <h2 className="mb-8 text-3xl font-bold">More in {service.category}</h2>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {relatedServices.map((item) => (
@@ -296,17 +282,11 @@ export default function ServiceDetails() {
                 />
 
                 <div className="p-6">
-                  <p className="text-sm font-medium text-rose-600">
-                    {item.category}
-                  </p>
-                  <h3 className="mt-2 text-xl font-bold text-zinc-900">
-                    {item.name}
-                  </h3>
+                  <p className="text-sm font-medium text-rose-600">{item.category}</p>
+                  <h3 className="mt-2 text-xl font-bold text-zinc-900">{item.name}</h3>
 
                   <div className="mt-5 flex items-center justify-between">
-                    <p className="text-lg font-bold text-zinc-900">
-                      {item.price}
-                    </p>
+                    <p className="text-lg font-bold text-zinc-900">{item.price}</p>
                     <Link
                       to={`/services/${item._id}`}
                       className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 transition hover:border-zinc-900"

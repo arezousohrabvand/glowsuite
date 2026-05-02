@@ -27,9 +27,7 @@ function StatusBadge({ status }) {
 function InfoTile({ label, value }) {
   return (
     <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-1 text-sm font-semibold text-zinc-900">{value}</p>
     </div>
   );
@@ -169,9 +167,7 @@ export default function MyClasses() {
       const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
       const token =
-        localStorage.getItem("token") ||
-        userInfo?.token ||
-        userInfo?.accessToken;
+        localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken;
 
       if (!token) {
         setPageError("Please log in first.");
@@ -203,16 +199,12 @@ export default function MyClasses() {
 
   const grouped = useMemo(() => {
     const active = enrollments.filter((item) => {
-      const status = String(
-        item.paymentStatus || item.status || "",
-      ).toLowerCase();
+      const status = String(item.paymentStatus || item.status || "").toLowerCase();
       return ["paid", "pending", "unpaid"].includes(status);
     });
 
     const other = enrollments.filter((item) => {
-      const status = String(
-        item.paymentStatus || item.status || "",
-      ).toLowerCase();
+      const status = String(item.paymentStatus || item.status || "").toLowerCase();
       return !["paid", "pending", "unpaid"].includes(status);
     });
 
@@ -287,8 +279,8 @@ export default function MyClasses() {
             My Classes
           </h1>
           <p className="mt-4 max-w-2xl text-zinc-600">
-            Review your enrolled classes, payment status, instructors, and
-            upcoming learning sessions in one premium space.
+            Review your enrolled classes, payment status, instructors, and upcoming
+            learning sessions in one premium space.
           </p>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -296,21 +288,15 @@ export default function MyClasses() {
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Total Enrollments
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.total}
-              </p>
-              <p className="mt-2 text-sm text-zinc-500">
-                All class enrollment records
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.total}</p>
+              <p className="mt-2 text-sm text-zinc-500">All class enrollment records</p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Active Classes
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.active}
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.active}</p>
               <p className="mt-2 text-sm text-zinc-500">
                 Paid, pending, or unpaid enrollments
               </p>
@@ -320,9 +306,7 @@ export default function MyClasses() {
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Paid Enrollments
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.paid}
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.paid}</p>
               <p className="mt-2 text-sm text-zinc-500">
                 Successfully completed class payments
               </p>
@@ -337,9 +321,7 @@ export default function MyClasses() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-2xl">
               🎓
             </div>
-            <h2 className="mt-5 text-2xl font-bold text-zinc-900">
-              No classes yet
-            </h2>
+            <h2 className="mt-5 text-2xl font-bold text-zinc-900">No classes yet</h2>
             <p className="mx-auto mt-3 max-w-md text-zinc-600">
               You have not enrolled in any classes yet.
             </p>

@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { servicesData } from "../data/servicesData";
 import {
@@ -108,17 +103,12 @@ export default function Booking() {
 
   const selectedService = useMemo(() => {
     if (isReschedule && bookingData?.serviceName) {
-      return (
-        servicesData.find((item) => item.name === bookingData.serviceName) ||
-        null
-      );
+      return servicesData.find((item) => item.name === bookingData.serviceName) || null;
     }
 
     if (!serviceId) return null;
 
-    return (
-      servicesData.find((item) => String(item.id) === String(serviceId)) || null
-    );
+    return servicesData.find((item) => String(item.id) === String(serviceId)) || null;
   }, [serviceId, isReschedule, bookingData]);
 
   const initialStylist = useMemo(() => {
@@ -155,8 +145,7 @@ export default function Booking() {
   useEffect(() => {
     if (isReschedule && bookingData) {
       const matchedService =
-        servicesData.find((item) => item.name === bookingData.serviceName) ||
-        null;
+        servicesData.find((item) => item.name === bookingData.serviceName) || null;
 
       setForm((prev) => ({
         ...prev,
@@ -224,8 +213,7 @@ export default function Booking() {
     if (!form.serviceId) return null;
 
     return (
-      servicesData.find((item) => String(item.id) === String(form.serviceId)) ||
-      null
+      servicesData.find((item) => String(item.id) === String(form.serviceId)) || null
     );
   }, [form.serviceId]);
 
@@ -277,9 +265,7 @@ export default function Booking() {
       }
 
       if (name === "serviceId") {
-        const service = servicesData.find(
-          (item) => String(item.id) === String(value),
-        );
+        const service = servicesData.find((item) => String(item.id) === String(value));
 
         if (service?.stylist) {
           updated.stylist = service.stylist;
@@ -463,11 +449,7 @@ export default function Booking() {
                   selectedService?.image ||
                   "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&w=1400&q=80"
                 }
-                alt={
-                  currentService?.name ||
-                  selectedService?.name ||
-                  "Salon booking"
-                }
+                alt={currentService?.name || selectedService?.name || "Salon booking"}
                 className="h-[420px] w-full object-cover"
               />
             </div>
@@ -500,19 +482,12 @@ export default function Booking() {
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <InfoPill>
-                    {(currentService || selectedService).category}
-                  </InfoPill>
-                  <InfoPill>
-                    {(currentService || selectedService).duration}
-                  </InfoPill>
-                  <InfoPill>
-                    {(currentService || selectedService).price}
-                  </InfoPill>
+                  <InfoPill>{(currentService || selectedService).category}</InfoPill>
+                  <InfoPill>{(currentService || selectedService).duration}</InfoPill>
+                  <InfoPill>{(currentService || selectedService).price}</InfoPill>
                   <InfoPill>
                     Stylist:{" "}
-                    {form.stylist ||
-                      (currentService || selectedService).stylist}
+                    {form.stylist || (currentService || selectedService).stylist}
                   </InfoPill>
                 </div>
 
@@ -540,9 +515,7 @@ export default function Booking() {
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-sm md:p-8">
             <SectionTitle
-              eyebrow={
-                isReschedule ? "Reschedule Appointment" : "Appointment Form"
-              }
+              eyebrow={isReschedule ? "Reschedule Appointment" : "Appointment Form"}
               title={isReschedule ? "Update your visit" : "Book your visit"}
               text={
                 isReschedule
@@ -565,9 +538,7 @@ export default function Booking() {
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-8">
               <div>
-                <h3 className="text-lg font-bold text-zinc-900">
-                  Your Details
-                </h3>
+                <h3 className="text-lg font-bold text-zinc-900">Your Details</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-zinc-700">
@@ -617,9 +588,7 @@ export default function Booking() {
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-zinc-900">
-                  Service Selection
-                </h3>
+                <h3 className="text-lg font-bold text-zinc-900">Service Selection</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm font-medium text-zinc-700">
@@ -706,9 +675,7 @@ export default function Booking() {
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-zinc-900">
-                  Appointment Notes
-                </h3>
+                <h3 className="text-lg font-bold text-zinc-900">Appointment Notes</h3>
                 <div className="mt-4">
                   <label className="mb-2 block text-sm font-medium text-zinc-700">
                     Tell us about your hair goals
@@ -813,15 +780,12 @@ export default function Booking() {
                     Date & Time
                   </p>
                   <p className="mt-2 font-semibold text-zinc-900">
-                    {form.date || "Choose a date"}{" "}
-                    {form.time ? `• ${form.time}` : ""}
+                    {form.date || "Choose a date"} {form.time ? `• ${form.time}` : ""}
                   </p>
                 </div>
 
                 <div className="rounded-2xl bg-zinc-50 p-4">
-                  <p className="text-xs uppercase tracking-wide text-zinc-400">
-                    Price
-                  </p>
+                  <p className="text-xs uppercase tracking-wide text-zinc-400">Price</p>
                   <p className="mt-2 font-semibold text-zinc-900">
                     {currentService?.price || ""}
                   </p>
@@ -884,13 +848,10 @@ export default function Booking() {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-rose-300">
                 Need help deciding?
               </p>
-              <h3 className="mt-3 text-2xl font-bold">
-                Book a consultation first
-              </h3>
+              <h3 className="mt-3 text-2xl font-bold">Book a consultation first</h3>
               <p className="mt-3 text-white/75">
-                If you are unsure which service is best, our salon team can
-                guide you based on your hair goals, texture, and maintenance
-                preferences.
+                If you are unsure which service is best, our salon team can guide you
+                based on your hair goals, texture, and maintenance preferences.
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">

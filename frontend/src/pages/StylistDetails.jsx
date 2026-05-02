@@ -10,12 +10,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80",
     bio: "Charlotte is known for polished precision cutting, modern shape refinement, face-framing balance, and elegant finishes tailored to each client’s features.",
-    specialties: [
-      "Precision Cuts",
-      "Fringe Design",
-      "Face Framing",
-      "Shape Refresh",
-    ],
+    specialties: ["Precision Cuts", "Fringe Design", "Face Framing", "Shape Refresh"],
     vibe: "Refined • Modern • Detail-focused",
   },
   {
@@ -26,12 +21,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=1200&q=80",
     bio: "Sophia specializes in dimensional blonding, balayage placement, gloss refinement, and luxury color services designed for seamless grow-out and elevated shine.",
-    specialties: [
-      "Balayage",
-      "Luxury Blonding",
-      "Gloss & Tone",
-      "Dimensional Color",
-    ],
+    specialties: ["Balayage", "Luxury Blonding", "Gloss & Tone", "Dimensional Color"],
     vibe: "Luxury • Dimensional • Signature Color",
   },
   {
@@ -53,12 +43,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1200&q=80",
     bio: "Olivia focuses on elegant bridal styling, event beauty, secure structure, and romantic finishes that look polished in person and on camera.",
-    specialties: [
-      "Bridal Hair",
-      "Preview Sessions",
-      "Event Styling",
-      "Elegant Updos",
-    ],
+    specialties: ["Bridal Hair", "Preview Sessions", "Event Styling", "Elegant Updos"],
     vibe: "Elegant • Romantic • Bridal Luxury",
   },
   {
@@ -80,12 +65,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
     bio: "Isabella delivers sleek smoothing services, repair-focused treatment planning, and high-shine finishes for clients who want polished control and softness.",
-    specialties: [
-      "Keratin",
-      "Smoothing",
-      "Shine Services",
-      "Repair Treatments",
-    ],
+    specialties: ["Keratin", "Smoothing", "Shine Services", "Repair Treatments"],
     vibe: "Sleek • Smooth • High-shine",
   },
   {
@@ -96,12 +76,7 @@ const stylists = [
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
     bio: "Emma blends wellness-based salon care with restorative treatments, scalp balance support, and healthy-hair routines that feel luxurious and practical.",
-    specialties: [
-      "Scalp Care",
-      "Repair Rituals",
-      "Hair Wellness",
-      "Hydration Care",
-    ],
+    specialties: ["Scalp Care", "Repair Rituals", "Hair Wellness", "Hydration Care"],
     vibe: "Restorative • Wellness • Healthy Hair",
   },
 ];
@@ -157,9 +132,7 @@ export default function StylistDetails() {
               {stylist.role}
             </p>
 
-            <h1 className="mt-4 text-4xl font-bold md:text-5xl">
-              {stylist.name}
-            </h1>
+            <h1 className="mt-4 text-4xl font-bold md:text-5xl">{stylist.name}</h1>
 
             <p className="mt-3 text-lg text-zinc-500">{stylist.vibe}</p>
 
@@ -172,9 +145,7 @@ export default function StylistDetails() {
               </span>
             </div>
 
-            <p className="mt-6 text-base leading-7 text-zinc-600">
-              {stylist.bio}
-            </p>
+            <p className="mt-6 text-base leading-7 text-zinc-600">{stylist.bio}</p>
 
             <div className="mt-8">
               <h2 className="text-xl font-bold text-zinc-900">Specialties</h2>
@@ -224,15 +195,11 @@ export default function StylistDetails() {
                 to={`/services/${service.id}`}
                 className="block transition hover:text-rose-600"
               >
-                <p className="text-lg font-semibold text-zinc-900">
-                  {service.name}
-                </p>
+                <p className="text-lg font-semibold text-zinc-900">{service.name}</p>
                 <p className="mt-2 text-sm text-zinc-500">
                   {service.category} • {service.price}
                 </p>
-                <p className="mt-3 text-sm text-zinc-600">
-                  {service.description}
-                </p>
+                <p className="mt-3 text-sm text-zinc-600">{service.description}</p>
               </Link>
 
               <Link

@@ -42,9 +42,7 @@ export const getInstructorDashboard = async (req, res) => {
         return {
           ...classItem.toObject(),
           enrolledCount: classEnrollments.length,
-          students: classEnrollments
-            .map((item) => item.customer)
-            .filter(Boolean),
+          students: classEnrollments.map((item) => item.customer).filter(Boolean),
         };
       }),
     );

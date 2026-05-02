@@ -1,5 +1,4 @@
 import Booking from "../models/Booking.js";
-
 export const hasStylistSlotConflict = async ({
   stylistId,
   slotStart,

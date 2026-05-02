@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  getStylistBookings,
-  updateStylistBookingStatus,
-} from "../../api/stylistApi";
+import { getStylistBookings, updateStylistBookingStatus } from "../../api/stylistApi";
 
 export default function StylistBookings() {
   const [bookings, setBookings] = useState([]);
@@ -93,27 +90,21 @@ export default function StylistBookings() {
                     <td className="py-4">
                       <div className="flex gap-2">
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(booking._id, "Confirmed")
-                          }
+                          onClick={() => handleStatusUpdate(booking._id, "Confirmed")}
                           className="rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700"
                         >
                           Confirm
                         </button>
 
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(booking._id, "Completed")
-                          }
+                          onClick={() => handleStatusUpdate(booking._id, "Completed")}
                           className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                         >
                           Complete
                         </button>
 
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(booking._id, "Cancelled")
-                          }
+                          onClick={() => handleStatusUpdate(booking._id, "Cancelled")}
                           className="rounded-full bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100"
                         >
                           Cancel

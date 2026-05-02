@@ -3,8 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { servicesData } from "../data/servicesData";
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 const categories = [
   "All",
@@ -110,14 +109,13 @@ export default function Services() {
             </p>
 
             <h1 className="max-w-2xl text-4xl font-bold leading-tight md:text-5xl">
-              Premium hair services designed around your style, texture, and
-              goals
+              Premium hair services designed around your style, texture, and goals
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-zinc-600 md:text-lg">
-              Explore custom cuts, dimensional color, smoothing treatments,
-              bridal styling, wellness services, and polished finishes created
-              by our expert stylists.
+              Explore custom cuts, dimensional color, smoothing treatments, bridal
+              styling, wellness services, and polished finishes created by our expert
+              stylists.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -186,9 +184,7 @@ export default function Services() {
                 </div>
 
                 <h3 className="text-2xl font-bold">{service.name}</h3>
-                <p className="mt-2 text-sm text-white/80">
-                  Stylist: {service.stylist}
-                </p>
+                <p className="mt-2 text-sm text-white/80">Stylist: {service.stylist}</p>
                 <p className="mt-3 text-sm leading-6 text-white/80">
                   {service.description}
                 </p>
@@ -222,8 +218,8 @@ export default function Services() {
           </p>
           <h2 className="mt-2 text-3xl font-bold">Sample hairstyle lookbook</h2>
           <p className="mt-3 max-w-2xl text-zinc-600">
-            Browse inspiration across soft waves, luxury blowouts, dimensional
-            blondes, bridal texture, sleek smoothing finishes, and modern cuts.
+            Browse inspiration across soft waves, luxury blowouts, dimensional blondes,
+            bridal texture, sleek smoothing finishes, and modern cuts.
           </p>
         </div>
 
@@ -242,9 +238,7 @@ export default function Services() {
               </div>
 
               <div className="p-4">
-                <p className="text-sm font-semibold text-zinc-900">
-                  {item.name}
-                </p>
+                <p className="text-sm font-semibold text-zinc-900">{item.name}</p>
                 <p className="mt-1 text-xs text-zinc-500">{item.category}</p>
               </div>
             </div>
@@ -304,9 +298,7 @@ export default function Services() {
                   </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-zinc-900">
-                  {service.name}
-                </h3>
+                <h3 className="text-xl font-bold text-zinc-900">{service.name}</h3>
 
                 <p className="mt-2 text-sm font-medium text-zinc-600">
                   Stylist: {service.stylist}
@@ -332,9 +324,7 @@ export default function Services() {
                     <p className="text-xs uppercase tracking-wide text-zinc-400">
                       Starting at
                     </p>
-                    <p className="text-2xl font-bold text-zinc-900">
-                      {service.price}
-                    </p>
+                    <p className="text-2xl font-bold text-zinc-900">{service.price}</p>
                   </div>
 
                   <div className="flex gap-3">

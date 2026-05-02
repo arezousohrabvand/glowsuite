@@ -49,9 +49,7 @@ function PageLoader() {
     <div className="flex min-h-[60vh] items-center justify-center bg-white px-6">
       <div className="text-center">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-rose-200 border-t-rose-500" />
-        <p className="mt-4 text-sm font-medium text-zinc-600">
-          Loading page...
-        </p>
+        <p className="mt-4 text-sm font-medium text-zinc-600">Loading page...</p>
       </div>
     </div>
   );

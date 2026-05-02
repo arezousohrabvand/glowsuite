@@ -1,15 +1,17 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import enrollmentRoutes from "./modules/enrollments/api/enrollment.routes.js";
 import authRoutes from "./modules/auth/api/auth.routes.js";
 import classRoutes from "./modules/classes/api/class.routes.js";
 import userRoutes from "./modules/users/api/user.routes.js";
 import bookingRoutes from "./modules/bookings/api/booking.routes.js";
-import enrollmentRoutes from "./routes/enrollmentRoutes.js";
-import billingRoutes from "./routes/billingRoutes.js";
+import billingRoutes from "./modules/billing/api/billing.routes.js";
+import couponRoutes from "./modules/billing/api/coupon.routes.js";
 import seedRoutes from "./routes/seedRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
-import stripeRoutes from "./routes/stripeRoutes.js";
+import paymentRoutes from "./modules/payments/api/payment.routes.js";
+import stripeRoutes from "./modules/payments/api/stripe.routes.js";
 import stylistRoutes from "./routes/stylistRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
 import serviceRoutes from "./modules/services/api/service.routes.js";
@@ -55,7 +57,6 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
-app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/classes", classRoutes);
@@ -67,6 +68,8 @@ app.use("/api/stylist", stylistRoutes);
 app.use("/api/instructor", instructorRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/enrollments", enrollmentRoutes);
+app.use("/api/coupons", couponRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

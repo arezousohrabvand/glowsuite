@@ -43,7 +43,6 @@ classSeatHoldSchema.index(
 );
 
 const ClassSeatHold =
-  mongoose.models.ClassSeatHold ||
-  mongoose.model("ClassSeatHold", classSeatHoldSchema);
+  mongoose.models.ClassSeatHold || mongoose.model("ClassSeatHold", classSeatHoldSchema);
 
 export default ClassSeatHold;

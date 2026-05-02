@@ -4,10 +4,7 @@ export function getAuthToken() {
     const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
     return (
-      localStorage.getItem("token") ||
-      userInfo?.token ||
-      userInfo?.accessToken ||
-      ""
+      localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken || ""
     );
   } catch {
     return localStorage.getItem("token") || "";

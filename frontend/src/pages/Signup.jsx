@@ -110,9 +110,7 @@ export default function Signup() {
                   placeholder="Enter your last name"
                 />
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.lastName.message}
-                  </p>
+                  <p className="mt-1 text-sm text-red-500">{errors.lastName.message}</p>
                 )}
               </div>
             </div>
@@ -134,9 +132,7 @@ export default function Signup() {
                 placeholder="Enter your phone number"
               />
               {errors.phone && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.phone.message}
-                </p>
+                <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>
               )}
             </div>
 
@@ -157,9 +153,7 @@ export default function Signup() {
                 placeholder="Enter your email"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.email.message}
-                </p>
+                <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
 
@@ -180,9 +174,7 @@ export default function Signup() {
                 placeholder="Create a password"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
+                <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
               )}
             </div>
 
@@ -203,10 +195,7 @@ export default function Signup() {
 
           <p className="mt-6 text-sm text-gray-600">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-pink-600 hover:underline"
-            >
+            <Link to="/login" className="font-semibold text-pink-600 hover:underline">
               Login
             </Link>
           </p>

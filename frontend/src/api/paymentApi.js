@@ -1,17 +1,13 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 function getToken() {
   const rawUserInfo = localStorage.getItem("userInfo");
   const userInfo = rawUserInfo ? JSON.parse(rawUserInfo) : null;
 
   return (
-    localStorage.getItem("token") ||
-    userInfo?.token ||
-    userInfo?.accessToken ||
-    ""
+    localStorage.getItem("token") || userInfo?.token || userInfo?.accessToken || ""
   );
 }
 
@@ -33,13 +29,10 @@ export async function previewCheckout(payload) {
   const { type, enrollmentId, couponCode = "", state = "TX" } = payload;
 
   if (type === "class") {
-    const res = await paymentClient.post(
-      `/enrollments/${enrollmentId}/preview`,
-      {
-        couponCode,
-        state,
-      },
-    );
+    const res = await paymentClient.post(`/enrollments/${enrollmentId}/preview`, {
+      couponCode,
+      state,
+    });
     return res.data;
   }
 
@@ -50,13 +43,10 @@ export async function createCheckout(payload) {
   const { type, enrollmentId, couponCode = "", state = "TX" } = payload;
 
   if (type === "class") {
-    const res = await paymentClient.post(
-      `/enrollments/${enrollmentId}/checkout`,
-      {
-        couponCode,
-        state,
-      },
-    );
+    const res = await paymentClient.post(`/enrollments/${enrollmentId}/checkout`, {
+      couponCode,
+      state,
+    });
     return res.data;
   }
 

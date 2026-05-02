@@ -1,4 +1,4 @@
-import Service from "../../../../models/Service.js";
+import Service from "../../../services/infrastructure/mongoose/ServiceModel.js";
 
 export const serviceRepository = {
   async findByName(serviceName) {
@@ -8,9 +8,7 @@ export const serviceRepository = {
   },
 
   async findAllBasic() {
-    return Service.find().select(
-      "_id name price category duration durationMinutes",
-    );
+    return Service.find().select("_id name price category duration durationMinutes");
   },
 
   async findBestMatch(serviceName) {

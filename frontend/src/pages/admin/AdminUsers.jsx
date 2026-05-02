@@ -58,8 +58,7 @@ export default function AdminUsers() {
     const q = search.toLowerCase().trim();
 
     return users.filter((user) => {
-      const fullName =
-        `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
+      const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
       const email = String(user.email || "").toLowerCase();
 
       const matchesSearch = !q || fullName.includes(q) || email.includes(q);
@@ -82,9 +81,7 @@ export default function AdminUsers() {
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-50 p-6">
-        <div className="rounded-3xl bg-white p-8 shadow-sm">
-          Loading users...
-        </div>
+        <div className="rounded-3xl bg-white p-8 shadow-sm">Loading users...</div>
       </div>
     );
   }
@@ -97,13 +94,11 @@ export default function AdminUsers() {
             Admin Access
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight">
-            Manage Users
-          </h1>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight">Manage Users</h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-            Review customers, stylists, instructors, and admins. Update access
-            roles safely from one premium dashboard.
+            Review customers, stylists, instructors, and admins. Update access roles
+            safely from one premium dashboard.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-4">
@@ -129,9 +124,7 @@ export default function AdminUsers() {
             </div>
 
             <div className="rounded-2xl bg-white/10 p-5 ring-1 ring-white/10">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
-                Admins
-              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/50">Admins</p>
               <p className="mt-2 text-3xl font-bold">{stats.admins}</p>
             </div>
           </div>
@@ -223,9 +216,7 @@ export default function AdminUsers() {
 
             {filteredUsers.length === 0 && (
               <div className="px-6 py-16 text-center">
-                <p className="text-lg font-semibold text-zinc-900">
-                  No users found
-                </p>
+                <p className="text-lg font-semibold text-zinc-900">No users found</p>
                 <p className="mt-2 text-sm text-zinc-500">
                   Try changing your search or role filter.
                 </p>

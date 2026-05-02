@@ -75,8 +75,7 @@ export default function Login() {
         });
       }
 
-      const redirectTo =
-        location.state?.from?.pathname || getRedirectPath(role);
+      const redirectTo = location.state?.from?.pathname || getRedirectPath(role);
 
       navigate(redirectTo, { replace: true });
     } catch (err) {
@@ -116,9 +115,7 @@ export default function Login() {
 
         <div className="p-8 sm:p-10">
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-2 text-sm text-gray-500">
-            Login to your GlowSuite account
-          </p>
+          <p className="mt-2 text-sm text-gray-500">Login to your GlowSuite account</p>
 
           {error && (
             <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -168,10 +165,7 @@ export default function Login() {
 
           <p className="mt-6 text-sm text-gray-600">
             Don’t have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-semibold text-pink-600 hover:underline"
-            >
+            <Link to="/signup" className="font-semibold text-pink-600 hover:underline">
               Sign up
             </Link>
           </p>

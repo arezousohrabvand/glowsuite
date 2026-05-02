@@ -9,8 +9,7 @@ function getUserDisplayStatus(status) {
   if (normalized === "confirmed") return "Confirmed";
   if (normalized === "pending") return "Pending";
   if (normalized === "completed") return "Completed";
-  if (normalized === "cancelled" || normalized === "canceled")
-    return "Cancelled";
+  if (normalized === "cancelled" || normalized === "canceled") return "Cancelled";
 
   return "Pending";
 }
@@ -39,9 +38,7 @@ function StatusBadge({ status }) {
 function InfoTile({ label, value }) {
   return (
     <div className="rounded-xl bg-zinc-50 px-4 py-3 ring-1 ring-zinc-100">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-        {label}
-      </p>
+      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">{label}</p>
       <p className="mt-1 text-sm font-semibold text-zinc-900">{value}</p>
     </div>
   );
@@ -67,8 +64,7 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
   const isCancelled = booking.status === "Cancelled";
   const paymentStatus = String(booking.paymentStatus || "").toLowerCase();
 
-  const canPay =
-    !["paid", "processing"].includes(paymentStatus) && !isCancelled;
+  const canPay = !["paid", "processing"].includes(paymentStatus) && !isCancelled;
   const disableReschedule = isCompleted || isCancelled;
   const disableCancel = isCompleted || isCancelled;
 
@@ -96,25 +92,19 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoTile
-          label="Stylist"
-          value={booking.stylistName || "Not assigned"}
-        />
+        <InfoTile label="Stylist" value={booking.stylistName || "Not assigned"} />
         <InfoTile label="Date" value={booking.date || "Not scheduled"} />
         <InfoTile label="Time" value={booking.time || "Not scheduled"} />
-        <InfoTile
-          label="Price"
-          value={`$${Number(booking.price || 0).toFixed(2)}`}
-        />
+        <InfoTile label="Price" value={`$${Number(booking.price || 0).toFixed(2)}`} />
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoTile
-          label="Payment Status"
-          value={booking.paymentStatus || "Unpaid"}
-        />
+        <InfoTile label="Payment Status" value={booking.paymentStatus || "Unpaid"} />
         <InfoTile label="Booking Status" value={displayStatus} />
-        <InfoTile label="Booking ID" value={booking._id?.slice(-8) || "—"} />
+        <InfoTile
+          label="Booking ID"
+          value={booking?.booking?._id?.slice(-8) || booking?._id?.slice(-8) || "—"}
+        />
         <InfoTile
           label="Amount Due"
           value={
@@ -127,9 +117,7 @@ function BookingCard({ booking, onCancel, onReschedule, actionLoadingId }) {
 
       {booking.notes?.trim() ? (
         <div className="mt-4 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">
-            Notes
-          </p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">Notes</p>
           <p className="mt-1 text-sm text-zinc-700">{booking.notes}</p>
         </div>
       ) : null}
@@ -243,9 +231,7 @@ export default function MyBookings() {
   }, [bookings, grouped]);
 
   const handleCancel = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this booking?",
-    );
+    const confirmed = window.confirm("Are you sure you want to cancel this booking?");
 
     if (!confirmed) return;
 
@@ -345,8 +331,8 @@ export default function MyBookings() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-zinc-600">
-            Manage upcoming visits, reschedule appointments, cancel bookings,
-            review payment status, and pay outstanding salon appointments.
+            Manage upcoming visits, reschedule appointments, cancel bookings, review
+            payment status, and pay outstanding salon appointments.
           </p>
 
           {message && (
@@ -360,21 +346,15 @@ export default function MyBookings() {
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Total Bookings
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.total}
-              </p>
-              <p className="mt-2 text-sm text-zinc-500">
-                All appointment records
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.total}</p>
+              <p className="mt-2 text-sm text-zinc-500">All appointment records</p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Active Appointments
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.active}
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.active}</p>
               <p className="mt-2 text-sm text-zinc-500">Pending or confirmed</p>
             </div>
 
@@ -382,9 +362,7 @@ export default function MyBookings() {
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">
                 Past Appointments
               </p>
-              <p className="mt-3 text-4xl font-bold text-zinc-900">
-                {stats.past}
-              </p>
+              <p className="mt-3 text-4xl font-bold text-zinc-900">{stats.past}</p>
               <p className="mt-2 text-sm text-zinc-500">
                 Completed or cancelled visits
               </p>
@@ -400,9 +378,7 @@ export default function MyBookings() {
               ✨
             </div>
 
-            <h2 className="mt-5 text-2xl font-bold text-zinc-900">
-              No bookings yet
-            </h2>
+            <h2 className="mt-5 text-2xl font-bold text-zinc-900">No bookings yet</h2>
 
             <p className="mx-auto mt-3 max-w-md text-zinc-600">
               You have not scheduled any salon appointments yet.
@@ -439,15 +415,19 @@ export default function MyBookings() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {grouped.active.map((booking) => (
-                    <BookingCard
-                      key={booking._id}
-                      booking={booking}
-                      onCancel={handleCancel}
-                      onReschedule={handleReschedule}
-                      actionLoadingId={actionLoadingId}
-                    />
-                  ))}
+                  {grouped.active.map((booking) => {
+                    const id = booking?._id || booking?.booking?._id;
+
+                    return (
+                      <BookingCard
+                        key={id}
+                        booking={booking}
+                        onCancel={handleCancel}
+                        onReschedule={handleReschedule}
+                        actionLoadingId={actionLoadingId}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -465,15 +445,19 @@ export default function MyBookings() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {grouped.past.map((booking) => (
-                    <BookingCard
-                      key={booking._id}
-                      booking={booking}
-                      onCancel={handleCancel}
-                      onReschedule={handleReschedule}
-                      actionLoadingId={actionLoadingId}
-                    />
-                  ))}
+                  {grouped.past.map((booking) => {
+                    const id = booking?._id || booking?.booking?._id;
+
+                    return (
+                      <BookingCard
+                        key={id}
+                        booking={booking}
+                        onCancel={handleCancel}
+                        onReschedule={handleReschedule}
+                        actionLoadingId={actionLoadingId}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

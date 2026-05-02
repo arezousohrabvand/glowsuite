@@ -1,9 +1,6 @@
 import { bookingRepository } from "../../infrastructure/repositories/booking.repository.js";
 import { createOutboxEvent } from "../../../../shared/utils/createOutboxEvent.js";
-import {
-  getCustomerName,
-  getStylistName,
-} from "../helpers/bookingEmail.helper.js";
+import { getCustomerName, getStylistName } from "../helpers/bookingEmail.helper.js";
 import { mapBookingToResponse } from "../../contracts/booking.mapper.js";
 
 export const confirmBookingHandler = async ({ bookingId, status }) => {

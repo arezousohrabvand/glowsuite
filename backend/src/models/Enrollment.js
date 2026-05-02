@@ -49,6 +49,7 @@ const enrollmentSchema = new mongoose.Schema(
 // Prevent duplicate enrollment per user per class
 enrollmentSchema.index({ customer: 1, classItem: 1 }, { unique: true });
 
-const Enrollment = mongoose.model("Enrollment", enrollmentSchema);
+const Enrollment =
+  mongoose.models.Enrollment || mongoose.model("Enrollment", enrollmentSchema);
 
 export default Enrollment;

@@ -1,44 +1,48 @@
-import asyncHandler from "express-async-handler";
-import User from "../infrastructure/mongoose/UserModel.js";
-
-export const getMyProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password");
-
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
+export const getMe = async (req, res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.error("getMe error:", error);
+    res.status(500).json({ message: "Failed to get user" });
   }
+};
 
-  res.json(user);
-});
-
-export const updateMyProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
+export const updateProfile = async (req, res) => {
+  try {
+    // TODO: update user logic
+    res.status(200).json({ message: "Profile updated (implement logic)" });
+  } catch (error) {
+    console.error("updateProfile error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
   }
+};
 
-  user.firstName = req.body.firstName || user.firstName;
-  user.lastName = req.body.lastName || user.lastName;
-  user.phone = req.body.phone || user.phone;
-  user.email = req.body.email || user.email;
+export const getAllUsers = async (req, res) => {
+  try {
+    // TODO: fetch users from DB
+    res.status(200).json({ message: "Get all users (implement logic)" });
+  } catch (error) {
+    console.error("getAllUsers error:", error);
+    res.status(500).json({ message: "Failed to get users" });
+  }
+};
 
-  const updatedUser = await user.save();
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    res.status(200).json({ message: `Get user ${id} (implement logic)` });
+  } catch (error) {
+    console.error("getUserById error:", error);
+    res.status(500).json({ message: "Failed to get user" });
+  }
+};
 
-  res.json({
-    _id: updatedUser._id,
-    firstName: updatedUser.firstName,
-    lastName: updatedUser.lastName,
-    email: updatedUser.email,
-    phone: updatedUser.phone,
-    role: updatedUser.role,
-  });
-});
-
-export const getUsersAdmin = asyncHandler(async (req, res) => {
-  const users = await User.find({}).select("-password").sort({ createdAt: -1 });
-
-  res.json(users);
-});
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    res.status(200).json({ message: `User ${id} deleted (implement logic)` });
+  } catch (error) {
+    console.error("deleteUser error:", error);
+    res.status(500).json({ message: "Failed to delete user" });
+  }
+};

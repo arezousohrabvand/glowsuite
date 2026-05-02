@@ -1,9 +1,6 @@
 import ClassModel from "../infrastructure/mongoose/ClassModel.js";
 import Enrollment from "../../../models/Enrollment.js";
-import {
-  toClassResponse,
-  toClassListResponse,
-} from "../contracts/class.mapper.js";
+import { toClassResponse, toClassListResponse } from "../contracts/class.mapper.js";
 
 async function addClassCounts(classItem) {
   const enrolledCount = await Enrollment.countDocuments({

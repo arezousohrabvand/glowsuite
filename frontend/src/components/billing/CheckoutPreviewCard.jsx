@@ -27,9 +27,7 @@ export default function CheckoutPreviewCard({
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div>
-          <label className="mb-2 block text-sm font-medium text-zinc-700">
-            State
-          </label>
+          <label className="mb-2 block text-sm font-medium text-zinc-700">State</label>
           <input
             type="text"
             value={stateCode}
@@ -77,9 +75,7 @@ export default function CheckoutPreviewCard({
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <span>Subtotal</span>
-              <span className="font-semibold">
-                {formatMoney(preview.subtotal)}
-              </span>
+              <span className="font-semibold">{formatMoney(preview.subtotal)}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -90,12 +86,8 @@ export default function CheckoutPreviewCard({
             </div>
 
             <div className="flex items-center justify-between">
-              <span>
-                Tax ({(Number(preview.taxRate || 0) * 100).toFixed(2)}%)
-              </span>
-              <span className="font-semibold">
-                {formatMoney(preview.taxAmount)}
-              </span>
+              <span>Tax ({(Number(preview.taxRate || 0) * 100).toFixed(2)}%)</span>
+              <span className="font-semibold">{formatMoney(preview.taxAmount)}</span>
             </div>
 
             <div className="flex items-center justify-between border-t border-zinc-200 pt-3 text-base">

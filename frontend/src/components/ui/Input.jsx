@@ -2,9 +2,7 @@ export default function Input({ label, error, className = "", ...props }) {
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-slate-700">
-          {label}
-        </label>
+        <label className="block text-sm font-medium text-slate-700">{label}</label>
       )}
 
       <input

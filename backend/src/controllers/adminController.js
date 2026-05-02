@@ -1,5 +1,5 @@
 import Booking from "../models/Booking.js";
-import Service from "../models/Service.js";
+import Service from "../modules/services/infrastructure/mongoose/ServiceModel.js";
 import User from "../modules/users/infrastructure/mongoose/UserModel.js";
 import Class from "../models/Class.js";
 import Enrollment from "../models/Enrollment.js";
@@ -401,18 +401,10 @@ export async function getAdminCalendar(req, res) {
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
     } else {
-      startDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        1,
-      );
+      startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       startDate.setHours(0, 0, 0, 0);
 
-      endDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth() + 1,
-        0,
-      );
+      endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
       endDate.setHours(23, 59, 59, 999);
     }
 
@@ -544,10 +536,7 @@ export async function getAdminCustomerDetails(req, res) {
       .populate("service", "name price duration")
       .sort({ createdAt: -1 });
 
-    const totalSpend = bookings.reduce(
-      (sum, item) => sum + Number(item.price || 0),
-      0,
-    );
+    const totalSpend = bookings.reduce((sum, item) => sum + Number(item.price || 0), 0);
 
     return res.json({
       customer,
@@ -590,8 +579,7 @@ export const getAdminClasses = async (req, res) => {
 };
 export async function createAdminClass(req, res) {
   try {
-    const { title, description, instructor, date, time, capacity, price } =
-      req.body;
+    const { title, description, instructor, date, time, capacity, price } = req.body;
 
     if (!title || !date || !time || price === undefined) {
       return res.status(400).json({
@@ -622,8 +610,7 @@ export async function createAdminClass(req, res) {
 export async function updateAdminClass(req, res) {
   try {
     const { classId } = req.params;
-    const { title, description, instructor, date, time, capacity, price } =
-      req.body;
+    const { title, description, instructor, date, time, capacity, price } = req.body;
 
     const updatedClass = await Class.findByIdAndUpdate(
       classId,
@@ -683,9 +670,7 @@ export async function getAdminClassEnrollments(req, res) {
     return res.json(enrollments);
   } catch (error) {
     console.error("getAdminClassEnrollments error:", error);
-    return res
-      .status(500)
-      .json({ message: "Failed to load class enrollments" });
+    return res.status(500).json({ message: "Failed to load class enrollments" });
   }
 }
 

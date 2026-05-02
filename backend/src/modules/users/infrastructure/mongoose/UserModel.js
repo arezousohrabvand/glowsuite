@@ -52,6 +52,6 @@ userSchema.index({ role: 1, createdAt: -1 });
 // search users by name
 userSchema.index({ firstName: 1, lastName: 1 });
 
-userSchema.index({ email: 1 }, { collation: { locale: "en", strength: 2 } });
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+export default User;

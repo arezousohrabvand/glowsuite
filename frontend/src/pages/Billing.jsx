@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getBillingHistory } from "../api/billingApi";
+import PaginationControls from "../components/common/PaginationControls";
 
 const DEFAULT_TAX_RATE = 0.0825;
 
@@ -43,11 +44,7 @@ function getTotal(bill) {
     return Number(bill.total || 0);
   }
 
-  const subtotal = getSubtotal(bill);
-  const tax = getTaxAmount(bill);
-  const discount = getDiscountAmount(bill);
-
-  return subtotal + tax - discount;
+  return getSubtotal(bill) + getTaxAmount(bill) - getDiscountAmount(bill);
 }
 
 function getNetPaid(bill) {
@@ -167,23 +164,21 @@ function BillingCard({ bill }) {
           <p className="text-xs uppercase tracking-[0.18em] text-blue-500">
             Refund Details
           </p>
+
           <div className="mt-2 grid gap-3 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-blue-700">
-                Refunded Amount:{" "}
-                <span className="font-semibold">
-                  {formatMoney(refundAmount, currency)}
-                </span>
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-blue-700 break-all">
-                Refund Reference:{" "}
-                <span className="font-semibold">
-                  {bill.stripeRefundId || "N/A"}
-                </span>
-              </p>
-            </div>
+            <p className="text-sm text-blue-700">
+              Refunded Amount:{" "}
+              <span className="font-semibold">
+                {formatMoney(refundAmount, currency)}
+              </span>
+            </p>
+
+            <p className="break-all text-sm text-blue-700">
+              Refund Reference:{" "}
+              <span className="font-semibold">
+                {bill.stripeRefundId || "N/A"}
+              </span>
+            </p>
           </div>
         </div>
       )}
@@ -212,14 +207,23 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pages: 1,
+    total: 0,
+  });
+
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getBillingHistory();
-        setBills(Array.isArray(data) ? data : []);
+        const data = await getBillingHistory({ page, limit: 10 });
+
+        setBills(Array.isArray(data) ? data : data.items || data.bills || []);
+        setPagination(data.pagination || { page: 1, pages: 1, total: 0 });
       } catch (err) {
         setError(
           err?.response?.data?.message || "Failed to load billing history",
@@ -230,18 +234,20 @@ export default function Billing() {
     };
 
     load();
-  }, []);
+  }, [page]);
 
   const stats = useMemo(() => {
     const totalCharged = bills.reduce((sum, bill) => sum + getTotal(bill), 0);
+
     const totalRefunded = bills.reduce(
       (sum, bill) => sum + getRefundAmount(bill),
       0,
     );
+
     const netRevenue = totalCharged - totalRefunded;
 
     return {
-      totalRecords: bills.length,
+      totalRecords: pagination.total || bills.length,
       paidCount: bills.filter((bill) => getPaymentStatus(bill) === "paid")
         .length,
       refundedCount: bills.filter(
@@ -251,7 +257,7 @@ export default function Billing() {
       totalRefunded,
       netRevenue,
     };
-  }, [bills]);
+  }, [bills, pagination.total]);
 
   if (loading) {
     return <div className="p-10 text-zinc-600">Loading billing...</div>;
@@ -276,26 +282,26 @@ export default function Billing() {
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow">
-          <p className="text-sm text-zinc-400">Paid</p>
+          <p className="text-sm text-zinc-400">Paid This Page</p>
           <p className="text-2xl font-bold text-zinc-900">{stats.paidCount}</p>
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow">
-          <p className="text-sm text-zinc-400">Refunded</p>
+          <p className="text-sm text-zinc-400">Refunded This Page</p>
           <p className="text-2xl font-bold text-zinc-900">
             {stats.refundedCount}
           </p>
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow">
-          <p className="text-sm text-zinc-400">Charged</p>
+          <p className="text-sm text-zinc-400">Charged This Page</p>
           <p className="text-2xl font-bold text-zinc-900">
             {formatMoney(stats.totalCharged)}
           </p>
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow">
-          <p className="text-sm text-zinc-400">Net Revenue</p>
+          <p className="text-sm text-zinc-400">Net This Page</p>
           <p className="text-2xl font-bold text-zinc-900">
             {formatMoney(stats.netRevenue)}
           </p>
@@ -304,7 +310,7 @@ export default function Billing() {
 
       {stats.totalRefunded > 0 && (
         <div className="mb-8 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-800">
-          Total Refunded:{" "}
+          Total Refunded This Page:{" "}
           <span className="font-semibold">
             {formatMoney(stats.totalRefunded)}
           </span>
@@ -314,11 +320,19 @@ export default function Billing() {
       {bills.length === 0 ? (
         <div className="text-center text-zinc-500">No billing records yet</div>
       ) : (
-        <div className="space-y-4">
-          {bills.map((bill) => (
-            <BillingCard key={bill._id} bill={bill} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {bills.map((bill) => (
+              <BillingCard key={bill._id} bill={bill} />
+            ))}
+          </div>
+
+          <PaginationControls
+            page={page}
+            pagination={pagination}
+            setPage={setPage}
+          />
+        </>
       )}
     </div>
   );

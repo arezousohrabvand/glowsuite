@@ -49,7 +49,6 @@ slotHoldSchema.index(
   },
 );
 
-const SlotHold =
-  mongoose.models.SlotHold || mongoose.model("SlotHold", slotHoldSchema);
+const SlotHold = mongoose.models.SlotHold || mongoose.model("SlotHold", slotHoldSchema);
 
 export default SlotHold;
