@@ -6,6 +6,8 @@ import {
 } from "../../api/billingApi";
 const [page, setPage] = useState(1);
 const [pagination, setPagination] = useState({});
+const [limit, setLimit] = useState(10);
+const [infiniteMode, setInfiniteMode] = useState(false);
 
 const [bills, setBills] = useState([]);
 
@@ -42,14 +44,19 @@ export default function AdminBilling() {
     applicableTo: "all",
   });
 
-  const loadBills = async () => {
+  const loadBills = async ({ append = false } = {}) => {
     try {
       setLoading(true);
       setError("");
-
-      const res = await getAdminBillingHistory({ page });
-
-      setBills(res.data || []);
+  
+      const res = await getAdminBillingHistory({ page, limit });
+  
+      if (append) {
+        setBills((prev) => [...prev, ...(res.data || [])]);
+      } else {
+        setBills(res.data || []);
+      }
+  
       setPagination(res.pagination || {});
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to load admin billing");
@@ -57,10 +64,9 @@ export default function AdminBilling() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    loadBills();
-  }, [page]);
+    loadBills({ append: infiniteMode && page > 1 });
+  }, [page, limit]);
 
   const stats = useMemo(() => {
     const revenue = bills.reduce(
@@ -266,6 +272,40 @@ export default function AdminBilling() {
         </div>
 
         <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-medium text-zinc-700">Rows per page</span>
+
+      <select
+        value={limit}
+        onChange={(e) => {
+          setLimit(Number(e.target.value));
+          setPage(1);
+          setBills([]);
+        }}
+        className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+      >
+        <option value={10}>10</option>
+        <option value={25}>25</option>
+        <option value={50}>50</option>
+      </select>
+    </div>
+
+    <label className="flex items-center gap-2 text-sm text-zinc-700">
+      <input
+        type="checkbox"
+        checked={infiniteMode}
+        onChange={(e) => {
+          setInfiniteMode(e.target.checked);
+          setPage(1);
+          setBills([]);
+        }}
+      />
+      Infinite scroll mode
+    </label>
+  </div>
+</div>
           <div className="border-b border-zinc-200 px-6 py-5">
             <h2 className="text-xl font-bold text-zinc-900">Billing Records</h2>
           </div>
@@ -400,7 +440,23 @@ export default function AdminBilling() {
             {!bills.length && (
               <div className="p-6 text-zinc-500">No billing records available.</div>
             )}
-            <PaginationControls page={page} pagination={pagination} setPage={setPage} />
+            {infiniteMode ? (
+  <div className="mt-8 flex justify-center">
+    <button
+      disabled={page >= (pagination.pages || 1)}
+      onClick={() => setPage((p) => p + 1)}
+      className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+    >
+      {page >= (pagination.pages || 1) ? "No more records" : "Load More"}
+    </button>
+  </div>
+) : (
+  <PaginationControls
+    page={page}
+    pagination={pagination}
+    setPage={setPage}
+  />
+)}
           </div>
         </div>
       </div>

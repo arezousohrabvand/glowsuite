@@ -43,9 +43,23 @@ export async function previewBilling(payload) {
   return res.data;
 }
 
-export const getAdminBillingHistory = async ({ page = 1 } = {}) => {
+export const getAdminBillingHistory = async ({
+  page = 1,
+  limit = 10,
+  status,
+  from,
+  to,
+  search,
+} = {}) => {
   const res = await axios.get("/api/admin/billing", {
-    params: { page },
+    params: {
+      page,
+      limit,
+      status,
+      from,
+      to,
+      search,
+    },
   });
 
   return res.data;
